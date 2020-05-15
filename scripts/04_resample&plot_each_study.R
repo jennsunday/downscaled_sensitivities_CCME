@@ -11,7 +11,6 @@ library(tidyverse)
 library(broom)
 library(cowplot)
 
-setwd("/Users/Jennifer_Sunday/Dropbox/UW_Schmidt/data/")
 #read in data subset to relevant range
 data_in_window<-read_csv("processed_data/data_in_window.csv")
 
@@ -67,14 +66,26 @@ lm_by_group_summary_regress<-regresion_data %>%
 sensitivity_by_study<-rbind(lm_by_group_summary_regress, lm_by_group_summary)
 write_csv(sensitivity_by_study, "processed_data/sensitivity_by_study.csv")
 
-###
+########################################
+#convert slope to response using mean deltas from downscaled model
+#read in data
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study.csv")
+table_delta_masked<-read_csv("processed_data/table_delta_masked.csv")
 
 sensitivity_by_study<-sensitivity_by_study %>%
   filter(term=="treat_value")
 
+deltas_used<-table_delta_masked %>%
+  filter(model=="12km", water_range=="200m")
 
 #convert slopes to sensitivity by normalizing variation to the range expected
+
+
+sensitivity_by_study$change_in_2100<-case_when(sensitivity_by_study$treatment_var=="CO2" ~ filter(deltas_used, variable=="CO2")$mean_delta,
+                                               sensitivity_by_study$treatment_var=="temperature" ~ filter(deltas_used, variable=="temp")$mean_delta,
+                                               sensitivity_by_study$treatment_var=="oxygen" ~ filter(deltas_used, variable=="oxygen")$mean_delta,
+                                               sensitivity_by_study$treatment_var=="salinity" ~ -3,
+                                               TRUE ~ -99)
 
 sensitivity_by_study$change_in_2100<-case_when(sensitivity_by_study$treatment_var=="CO2" ~ 726,
                           sensitivity_by_study$treatment_var=="temperature" ~ 2.32,
@@ -88,7 +99,11 @@ sensitivity_by_study<-sensitivity_by_study %>%
 
 write_csv(sensitivity_by_study, "processed_data/sensitivity_by_study_cal.csv")
 
+
+##################################
+
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_cal.csv")
+
 
 
 sensitivity_by_study %>%

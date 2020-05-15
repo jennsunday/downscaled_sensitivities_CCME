@@ -1,5 +1,5 @@
 #goal: combine data for overall sensitivity, projecting uncertainty
-#idea: take a weighted average of slopes, using metanalalysis approach...
+#idea: take a weighted average of slopes, using metanalalysis approach.
 #weight the individual effect sizes by the inverse of the effect size variance to account for
 #the precision of each study
 
@@ -64,20 +64,23 @@ sensitivity_by_group<-sensitivity_by_study %>%
 sensitivity_by_group<-sensitivity_by_group %>%
   mutate(level_of_response=ifelse(response_type=="survival", "pop", "ind"))
 
+unique(sensitivity_by_group$treatment_var)
+unique(environmental_mean_deltas$variable)
 
 #get mean projected change for each zone and model
-environmental_mean_deltas<-read_csv("processed_data/environmental_mean_deltas.csv") %>%
-  rename(modelzone=zone) %>%
-  filter(variable!="pH")
-
+environmental_mean_deltas<-read_csv("processed_data/table_delta_masked.csv") %>%
+  rename(modelzone=water_range) %>%
+  mutate(variable=ifelse(variable=="temp", "temperature", variable)) 
 
 #right_join so that each model and zone delta is joined by a sensitivity on the left
 all_models_response_estimates<-right_join(sensitivity_by_group, environmental_mean_deltas, by = c("treatment_var" = "variable"))
 
+
 all_models_response_estimates<-all_models_response_estimates %>%
-  mutate(percentchange=weighted_sensitivity*delta*100) %>% #calculate sensitivity
-  mutate(percentchange_lo_95=lo_95*delta*100) %>% #calculate low 95CI
-  mutate(percentchange_hi_95=hi_95*delta*100)  #calculate high 95CI
+  mutate(percentchange=weighted_sensitivity*mean_delta*100) %>% #calculate meta-analyzed sensitivity
+  mutate(percentchange_lo_95=lo_95*mean_delta*100) %>% #calculate low 95CI
+  mutate(percentchange_hi_95=hi_95*mean_delta*100)  #calculate high 95CI
+
 
 #plot all responses across different models and water zones
 all_models_response_estimates %>%
@@ -95,10 +98,11 @@ ggsave("figures/meta_sensitivities_allmodels.pdf", width = 10, height = 8)
 
 # make summary figure that uses the most relavant water zone per response type for 12km CCS
 bigdomain_relavant_layer<-all_models_response_estimates %>%
-  filter(model=="CCS_12") %>%
+  filter(model=="12km") %>%
   filter(zone=="benthic" & modelzone=="bottom" |
          zone=="pelagic" & modelzone=="surface" |
          zone=="mesopelagic" & modelzone=="200m")
+
 #check
 #View(bigdomain_relavant_layer)
 

@@ -134,4 +134,12 @@ table_results_12km<-rbind(r1, r2, r3, r4, r5, r6, r7, r8, r9)
 #combine into one table
 table_delta_masked<-rbind(table_results_2km, table_results_12km)
 
+
+
+#assume a conversion factor from kPA to ml/l - awaiting correction from Darren
+conv_oxy<-(-0.58/-24.62583)
+
+table_delta_masked<-table_delta_masked %>%
+  mutate(mean_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta))
+
 write_csv(table_delta_masked, "processed_data/table_delta_masked.csv")

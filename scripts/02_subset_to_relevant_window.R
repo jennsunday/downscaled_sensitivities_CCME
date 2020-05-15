@@ -11,8 +11,8 @@ library(dplyr)
 #read in the procesed data
 setwd('/Users/Jennifer_Sunday/Dropbox/UW_Schmidt/data/')
 data<-read.csv("processed_data/Schmidt_biotic_responses_data_180118.csv")
-
-
+filter(data, treatment_var=="oxygen")
+data$treatment_var
 #remove very very high CO2 values
 data <- data %>%
   filter(treat_value<2000)
@@ -195,6 +195,8 @@ sensitivity_results %>%
 #add invidivual responses of each category (reduce number of categories)
 #reorder in a sensible way - highest to lowest sensitivity? - plants, inverts, fish?
 
+
+0.3141867*21.000000
 # gets creativ after here
 #
 #
