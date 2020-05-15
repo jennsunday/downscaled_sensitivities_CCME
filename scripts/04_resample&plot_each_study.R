@@ -67,6 +67,9 @@ sensitivity_by_study<-rbind(lm_by_group_summary_regress, lm_by_group_summary)
 write_csv(sensitivity_by_study, "processed_data/sensitivity_by_study.csv")
 
 ########################################
+#plot model fits over raw data
+
+########################################
 #convert slope to response using mean deltas from downscaled model
 #read in data
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study.csv")
@@ -87,11 +90,11 @@ sensitivity_by_study$change_in_2100<-case_when(sensitivity_by_study$treatment_va
                                                sensitivity_by_study$treatment_var=="salinity" ~ -3,
                                                TRUE ~ -99)
 
-sensitivity_by_study$change_in_2100<-case_when(sensitivity_by_study$treatment_var=="CO2" ~ 726,
-                          sensitivity_by_study$treatment_var=="temperature" ~ 2.32,
-                          sensitivity_by_study$treatment_var=="oxygen" ~ -0.58,
-                          sensitivity_by_study$treatment_var=="salinity" ~ -3,
-                          TRUE ~ -99)
+#sensitivity_by_study$change_in_2100<-case_when(sensitivity_by_study$treatment_var=="CO2" ~ 726,
+                          #sensitivity_by_study$treatment_var=="temperature" ~ 2.32,
+                          #sensitivity_by_study$treatment_var=="oxygen" ~ -0.58,
+                          #sensitivity_by_study$treatment_var=="salinity" ~ -3,
+                          #TRUE ~ -99)
 
 sensitivity_by_study<-sensitivity_by_study %>%
   mutate(percentchange=mean_estimate*change_in_2100*100) %>% #calculate sensitivity
