@@ -3,13 +3,12 @@
 #equal to standard deviation of the mean
 
 #librarieslibrary(nlme) 
-detach(package:plyr)  
 library(mgcv)
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(broom)
-library(cowplot)
+
 
 #read in data subset to relevant range
 data_in_window<-read_csv("processed_data/data_in_window.csv")
@@ -24,30 +23,35 @@ data_in_window<-read_csv("processed_data/data_in_window.csv")
 anova_data<-data_in_window %>%
   filter(study_design %in% c("anova", "multi-level anova")) 
 
-#expand anova df by sample size of each row
-anova_data_expanded <- anova_data[rep(seq.int(1,nrow(anova_data)), anova_data$sample_size),]
+unique(data_in_window$unique_study)
+unique(regresion_data$unique_study)
 
-names(data_in_window)
-#simulate regression-style data from anova data in 5000 iterations, fit lms through them, and take mean.
+#expand anova df by sample size of each row
+anova_data_expanded<- anova_data[rep(seq.int(1,nrow(anova_data)), anova_data$sample_size),]
+
+#simulate regression-style data from anova data in 5000 iterations, fit lms through them
 lm_anova_resampled<-data.frame()
-for(i in 1:5000){
+for(i in 1:100){ #change back to 5000 eventually
   lme_rep<-anova_data_expanded %>%
     mutate(simulted_response=rnorm(rel_response, 
                                    mean=rel_response, 
                                    sd=SE_response_for_resampling)) %>% #add a column with a simulated sample for each row
     group_by(Author, Pub_Year, English_Name, Life_stage, 
-             Response_variable, response_type, study, treatment_var, rate_or_biomass, response_type_2) %>%
+             Response_variable, response_type, unique_study, treatment_var, rate_or_biomass, response_type_2) %>% #group data to study level and keep info
     do(tidy(lm(simulted_response~treat_value, data=.))) %>%
     mutate(replicate=i) %>%
     ungroup()
     lm_anova_resampled<-bind_rows(lme_rep, lm_anova_resampled)} 
+#naw have slope and intercept of n models fit to anova-style data
+
+
 
 #get a summary of simluated lm's from anova data
 lm_by_group_summary<-lm_anova_resampled %>%
   group_by(Author, Pub_Year, English_Name, Life_stage, 
-           Response_variable, response_type, study, treatment_var, rate_or_biomass, response_type_2, term) %>%
-  mutate(mean_estimate= mean(estimate), se_estimate = sd(estimate)) %>%
-  filter(replicate=="1")
+           Response_variable, response_type, unique_study, treatment_var, rate_or_biomass, response_type_2, term) %>%
+  mutate(mean_estimate= mean(estimate), se_estimate = sd(estimate)) %>% #take means across reps
+  filter(replicate=="1") #subset to the first rep
 
 # do regular lm's for regression-style data
 regresion_data<-data_in_window %>%
@@ -66,8 +70,8 @@ lm_by_group_summary_regress<-regresion_data %>%
 sensitivity_by_study<-rbind(lm_by_group_summary_regress, lm_by_group_summary)
 write_csv(sensitivity_by_study, "processed_data/sensitivity_by_study.csv")
 
-########################################
-#plot model fits over raw data
+
+
 
 ########################################
 #convert slope to response using mean deltas from downscaled model

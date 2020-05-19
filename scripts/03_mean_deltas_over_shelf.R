@@ -8,7 +8,6 @@ library(dplyr)
 library(tidyverse)
 library(maps)
 library(reshape2)
-library(mapdata)
 library(gridExtra)
 
 #read in 500m mask
@@ -39,8 +38,7 @@ oxy_200_12km<-read_csv("processed_data/12km_delta_oxy_200m.csv", col_names=F)
 oxy_bot_12km<-read_csv("processed_data/12km_delta_oxy_bot.csv", col_names=F)
 oxy_surf_12km<-read_csv("processed_data/12km_delta_oxy_surf.csv", col_names=F)
 
-glimpse(littleCO2200)
-is.numeric(littleCO2200$X174)
+
 
 #apply the mask to each
 CO2_200_2km[!little_shelf_mask==1] <- NA
@@ -136,8 +134,8 @@ table_delta_masked<-rbind(table_results_2km, table_results_12km)
 
 
 
-#assume a conversion factor from kPA to ml/l - awaiting correction from Darren
-conv_oxy<-(-0.58/-24.62583)
+#values are still in units of mmol/m^3.  To convert to ml/l, multiply by this:
+conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
 
 table_delta_masked<-table_delta_masked %>%
   mutate(mean_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta))
