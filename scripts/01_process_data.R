@@ -5,7 +5,6 @@ library(plyr)
 library(mgcv)
 
 #### Step 2: read in the data
-setwd('/Users/Jennifer_Sunday/Dropbox/UW_Schmidt/data/')
 data<-read.csv(file="raw_data/direct_responses_data_jan2.csv", header=T)
 
 #make a unique identifier for each author, pub_year, and response_variable combination
@@ -32,7 +31,7 @@ data<-data %>%
          rec_upperSE=ifelse(response<0, max(upperSE-response, 0.01), upperSE), # limit upper SE to 0.01
          recentered_response=(ifelse(response<0.01, 0.01, response))) # limit response to 0.01
 
-#calculate something within each study
+#calculate variables within each study
 data<-ddply(data, "study", mutate, max_response=max(recentered_response),   #add columns of max response and log response relative to max
             log_rel_response=log(recentered_response/max_response), #log of relative response to max
             log_rel_upperSE=log(rec_upperSE/max_response),
