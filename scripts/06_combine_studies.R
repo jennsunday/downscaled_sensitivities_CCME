@@ -4,19 +4,16 @@
 #the precision of each study
 
 #librarieslibrary(nlme) 
-detach(package:plyr)  
-library(mgcv)
-library(ggplot2)
-library(dplyr)
 library(tidyverse)
 library(broom)
 
-
-setwd("/Users/Jennifer_Sunday/Dropbox/UW_Schmidt/data/")
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_cal.csv")
-#View(sensitivity_by_study)
 
+
+
+###############
 #reorder species
+###############
 sensitivity_by_study<-sensitivity_by_study%>%
   mutate(zone=case_when(Life_stage %in% c("larvae", "megalopa", "Larvae", "Brachiolaria larva") ~ "pelagic",
                         English_Name =="Pink Salmon" ~ "mesopelagic",
@@ -34,11 +31,7 @@ sensitivity_by_study<-sensitivity_by_study %>%
 sensitivity_by_study$English_Name <- factor(sensitivity_by_study$English_Name, 
                                             levels = rev(order_desired))
 
-
-# make a category for population or individual-level responses
-sensitivity_by_study<-sensitivity_by_study %>%
-  mutate(level_of_response=ifelse(response_type=="survival", "pop", "ind"))
-
+####################
 
 #calculate the meta-analyzed slope for each treatment type, species, zone, and major response category.
 #calculate a slope for each species and response type, 
@@ -49,7 +42,7 @@ sensitivity_by_study<-sensitivity_by_study %>%
 
 
 
-#calculate weighted mean by species x treatment x response type
+#calculate weighted mean by species x treatment x response type x zone occupied
 sensitivity_by_group<-sensitivity_by_study %>%
   mutate(weight_slope=1/((std.error+0.001)^2)) %>%
   group_by(English_Name, treatment_var, response_type, zone) %>%
@@ -59,17 +52,11 @@ sensitivity_by_group<-sensitivity_by_study %>%
                    n=n(), SE_wmean=sqrt(1/(sum(weight)))) %>%
   mutate(lo_95=weighted_sensitivity-1.96*SE_wmean, hi_95=weighted_sensitivity+1.96*SE_wmean)
 
-
-# make a category for population or individual-level responses
-sensitivity_by_group<-sensitivity_by_group %>%
-  mutate(level_of_response=ifelse(response_type=="survival", "pop", "ind"))
-
-unique(sensitivity_by_group$treatment_var)
-unique(environmental_mean_deltas$variable)
+write_csv(sensitivity_by_group, "processed_data/sensitivity_by_group.csv")
 
 #get mean projected change for each zone and model
 environmental_mean_deltas<-read_csv("processed_data/table_delta_masked.csv") %>%
-  rename(modelzone=water_range) %>%
+  mutate(modelzone=water_range) %>%
   mutate(variable=ifelse(variable=="temp", "temperature", variable)) 
 
 #right_join so that each model and zone delta is joined by a sensitivity on the left
@@ -82,42 +69,49 @@ all_models_response_estimates<-all_models_response_estimates %>%
   mutate(percentchange_hi_95=hi_95*mean_delta*100)  #calculate high 95CI
 
 
+
+# combine oxygen and CO2 responses for plotting standardized responses (slopes)
+all_models_response_estimates<-all_models_response_estimates%>%
+  mutate(treatment_var2=ifelse(
+    treatment_var %in% c("pH", "CO2"), "CO2 and pH", treatment_var))
+
 #plot all responses across different models and water zones
 all_models_response_estimates %>%
-  ggplot(aes(x=percentchange, y=English_Name, shape=response_type, col=treatment_var)) +
+  mutate(model=ifelse(model=="2km","1.5km", model)) %>%
+  mutate(modelzone=ifelse(modelzone=="200m", "upper 200m average", modelzone)) %>%
+  ggplot(aes(x=percentchange, y=English_Name, shape=response_type, col=treatment_var2)) +
   #coord_cartesian(xlim=c(-100,150))  +
   facet_grid(model~ modelzone) +
   geom_point() + theme_bw() +
   labs(y = "Species", x="Percent change in biological rate") +
   geom_errorbarh(aes(xmin=(percentchange_lo_95), 
                      xmax=(percentchange_hi_95)), height=0) +
-  geom_vline(xintercept = c(-10, 10), linetype="dotted") 
+  geom_vline(xintercept = c(-10, 10), linetype="dotted") +
+  labs(col = "treatment variable", shape="response type")
 ggsave("figures/meta_sensitivities_allmodels.png", width = 10, height = 8)
 ggsave("figures/meta_sensitivities_allmodels.pdf", width = 10, height = 8)
 
 
 # make summary figure that uses the most relavant water zone per response type for 12km CCS
-bigdomain_relavant_layer<-all_models_response_estimates %>%
+domain_relavant_layer_12km<-all_models_response_estimates %>%
   filter(model=="12km") %>%
   filter(zone=="benthic" & modelzone=="bottom" |
          zone=="pelagic" & modelzone=="surface" |
          zone=="mesopelagic" & modelzone=="200m")
 
-#check
-#View(bigdomain_relavant_layer)
-
 #plot responses for big domain and relevant layer
 #plot all responses across different models and water zones
-bigdomain_relavant_layer %>%
-  ggplot(aes(x=percentchange, y=English_Name, shape=response_type, col=treatment_var)) +
+domain_relavant_layer_12km %>%
+  ggplot(aes(x=percentchange, y=English_Name, shape=response_type, col=treatment_var2)) +
   coord_cartesian(xlim=c(-95,95)) +
   geom_point() + theme_bw() +
-  labs(y = "Species", x="Percent change in biological rate") +
+  labs(y = "Species", x="Percent change in biological rate", 
+       col = "treatment variable", shape="response type") +
   geom_errorbarh(aes(xmin=(percentchange_lo_95), 
                      xmax=(percentchange_hi_95)), height=0) +
   geom_vline(xintercept = c(-10, 10), linetype="dotted") 
-ggsave("figures/meta_sensitivities_relevant.png", width = 7, height = 4)
-ggsave("figures/meta_sensitivities_relevant.pdf", width = 7, height = 4)
+ggsave("figures/meta_sensitivities_relevant_12km.png", width = 7, height = 4)
+ggsave("figures/meta_sensitivities_relevant_12km.pdf", width = 7, height = 4)
 
 #Anchovy MI: -19.4%
 #Shrimp MI: -29.7%
@@ -137,3 +131,24 @@ ggsave("figures/MI_sensitivities.pdf", width = 6, height = 1)
 write_csv(bigdomain_relavant_layer, "processed_data/bigdomain_relavant_layer")
 write_csv(all_models_response_estimates, "processed_data/all_models_response_estimates")
 
+#for supplement, repeat for 1.5km model
+# make summary figure that uses the most relavant water zone per response type for 12km CCS
+relavant_layer_2km<-all_models_response_estimates %>%
+  filter(model=="2km") %>%
+  filter(zone=="benthic" & modelzone=="bottom" |
+           zone=="pelagic" & modelzone=="surface" |
+           zone=="mesopelagic" & modelzone=="200m")
+
+#plot responses for big domain and relevant layer
+#plot all responses across different models and water zones
+relavant_layer_2km %>%
+  ggplot(aes(x=percentchange, y=English_Name, shape=response_type, col=treatment_var2)) +
+  coord_cartesian(xlim=c(-95,95)) +
+  geom_point() + theme_bw() +
+  labs(y = "Species", x="Percent change in biological rate", 
+       col = "treatment variable", shape="response type") +
+  geom_errorbarh(aes(xmin=(percentchange_lo_95), 
+                     xmax=(percentchange_hi_95)), height=0) +
+  geom_vline(xintercept = c(-10, 10), linetype="dotted") 
+ggsave("figures/meta_sensitivities_relevant_2km.png", width = 7, height = 4)
+ggsave("figures/meta_sensitivities_relevant_2km.pdf", width = 7, height = 4)

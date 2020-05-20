@@ -1,4 +1,5 @@
 #goal: plot model fits over raw data
+#this is as an extension of script 04, need to have "lm_anova_resampled" object in environment
 
 #do this by:
 #expand an empty df so that for each study there are n=10 rows between minimum and maximum treatment values
@@ -10,9 +11,6 @@
 
 
 #librarieslibrary(nlme) 
-library(mgcv)
-library(ggplot2)
-library(dplyr)
 library(tidyverse)
 library(broom)
 
@@ -63,13 +61,16 @@ for(i in seq_x_per_study_2$unique_study){ # i is every unique study id repeated 
     seq_x_per_study_2[seq_x_per_study_2$unique_study==i,]$low_pred[j]<-as.numeric(quantile(test, 0.025))
 }
 }
-#ok, seems ok. predictions have been made only for anova-style data so far.
+#ok, predictions made only for anova-style data so far.
 
 #make a vector of regression study i.d.s
 reg_studies<-filter(seq_x_per_study_2, study_design == c("regression"))$unique_study
+
 #for regression-style data, use predict with SE
+#enter results right into placeholders in "seq_x_per_study_2'
 for(i in reg_studies){
-  mod<-regresion_data %>%
+  mod<-data_in_window %>%
+    filter(study_design %in% c("regression"))  %>%
     filter(unique_study==i) %>%
     lm(rel_response~treat_value, data=.)
   mod_pred<-predict.lm(mod, newdata=seq_x_per_study_2 %>%
@@ -80,21 +81,30 @@ for(i in reg_studies){
   seq_x_per_study_2[seq_x_per_study_2$unique_study==i,]$low_pred[1:10]<-mod_pred$fit-mod_pred$se.fit
 }
 
+#group study design into 2 categories for plotting
 seq_x_per_study_2<-seq_x_per_study_2 %>%
 mutate(study_design=ifelse(study_design=="regression", "regression", "anova"))
-       
-names(data_in_window)  
+      
+write.csv(seq_x_per_study_2, "processed_data/data_to_predict.csv")
+
 #plot
+data_to_predict<-read_csv("processed_data/data_to_predict.csv")
+data_in_window<-read_csv("processed_data/data_in_window.csv")
+
 data_in_window %>%
   ggplot(aes(x=treat_value, y=rel_response, col=response_type)) + geom_point() +
   facet_grid(English_Name~treatment_var, scales = "free_x") +
   coord_cartesian(ylim=c(-0.1, 1.3)) +
-  geom_line(data=seq_x_per_study_2,
+  geom_line(data=data_to_predict,
             aes(x=seq_x_val, y=mean_pred, group=(as.factor(unique_study)), lty=study_design)) +
-  geom_ribbon(data=seq_x_per_study_2, 
+  geom_errorbar(aes(ymax=rel_upperSE, ymin=rel_lowerSE)) +
+  geom_ribbon(data=data_to_predict, 
               aes(x=seq_x_val, ymin=low_pred, ymax=upp_pred, group=as.factor(unique_study), 
                   fill=response_type), linetype=0, alpha = 0.5) +
-  geom_errorbar(aes(ymax=rel_upperSE, ymin=rel_lowerSE)) +
-  theme_bw()
+  theme_bw() +
+  theme(strip.text.y = element_text(angle=0)) +
+  labs(x="treatment value", y="relative response",
+       lty = "study design", fill="response type", col="response type")
+ggsave("figures/model_fits_over_raw_data.pdf", height=8, width=8)
 
-write.csv(seq_x_per_study_2, "processed_data/data_to_predict.csv")
+
