@@ -168,3 +168,4 @@ table_delta_masked<-table_delta_masked %>%
   mutate(mean_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta))
 
 write_csv(table_delta_masked, "processed_data/table_delta_masked.csv")
+

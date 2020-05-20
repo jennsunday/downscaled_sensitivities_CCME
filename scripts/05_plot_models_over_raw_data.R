@@ -106,5 +106,6 @@ data_in_window %>%
   labs(x="treatment value", y="relative response",
        lty = "study design", fill="response type", col="response type")
 ggsave("figures/model_fits_over_raw_data.pdf", height=8, width=8)
+ggsave("figures/model_fits_over_raw_data.png", height=8, width=8)
 
 
