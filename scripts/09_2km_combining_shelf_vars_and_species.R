@@ -7,7 +7,6 @@ library(reshape2)
 library(gridExtra)
 library(RColorBrewer)
 
-
 #read in data
 oxyrel_greater_than_10percent<-read_csv("processed_data/oxyrel_greater_than_10percent.csv")
 CO2rel_greater_than_10percent<-read_csv("processed_data/CO2rel_greater_than_10percent.csv")
@@ -106,28 +105,32 @@ max(all_vars_together_rel$long)*5/100
 max(all_vars_together_rel$lat)*5/100
 
 
-#plot##############
+#make coastline line mask only contain coastline cells##############
 head(coastline_mask)
 coastline_mask<-coastline_mask %>%
   filter(land==1)
 
+#make response data only consist of shelf cells in the ocean##############
 all_vars_masked<-all_vars_together_rel %>%
-  filter(shelf==1)
+  filter(shelf==1,
+         no_env_data=="yes_data")
+
+### plot ##########################################################
 ###10 %##############
+#get manual values
+colourCount = length(unique(as.factor(all_vars_masked$abs_number_over_10)))
+mycolscale<-(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) 
+mycolscale[1]<-"#d9d9d9" # make 0 value = grey
 
-coastline_mask %>%
-  ggplot(aes(x = lat, y = long)) +
-  geom_tile(data=test, colour="grey50") 
 
-colorRampPalette
+
 #absolute number of responses greater than 10
 colourCount = length(unique(as.factor(all_vars_masked$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(abs_number_over_10))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +  
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + theme(axis.title.x=element_blank(),
                           axis.text.x=element_blank(),
@@ -136,7 +139,8 @@ all_vars_masked %>%
                           axis.title.y=element_blank(),
                           axis.text.y=element_blank(),
                           axis.ticks.y=element_blank(),
-                          axis.line.y=element_blank())  +
+                          axis.line.y=element_blank(),
+                          strip.background=element_blank())  +
   labs(fill="number of response
 types altered by > 10%")
 #ggsave("figures/abs_10percent_2km.pdf", height = 6, width = 9)
@@ -148,10 +152,9 @@ ggsave("figures/abs_10percent_2km.png", height = 6, width = 9)
 #colourCount = length(unique(as.factor(all_vars_together_rel$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(neg_number_over_10))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 
   theme(axis.title.x=element_blank(),
@@ -161,7 +164,8 @@ all_vars_masked %>%
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.line.y=element_blank()) +
+        axis.line.y=element_blank(),
+        strip.background=element_blank())  +
   labs(fill="number of response 
 types decreased by > 10%")
 #ggsave("figures/neg_10percent_2km.pdf", height = 6, width = 9)
@@ -171,10 +175,9 @@ ggsave("figures/neg_10percent_2km.png", height = 6, width = 9)
 #colourCount = length(unique(as.factor(pos_vars_together_rel$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(pos_number_over_10))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 
   theme(axis.title.x=element_blank(),
@@ -184,7 +187,8 @@ all_vars_masked %>%
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.line.y=element_blank()) +
+        axis.line.y=element_blank(),
+        strip.background=element_blank())  +
   labs(fill="number of response 
 types increased by > 10%")
 #ggsave("figures/pos_10percent_2km.pdf", height = 6, width = 9)
@@ -199,7 +203,7 @@ all_vars_masked %>%
   scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
   geom_tile(data=coastline_mask, fill="grey") +
   geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 
   theme(axis.title.x=element_blank(),
@@ -209,7 +213,8 @@ all_vars_masked %>%
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.line.y=element_blank()) +
+        axis.line.y=element_blank(),
+        strip.background=element_blank())  +
   labs(fill="number of response 
 types altered by > 20%")
 #ggsave("figures/abs_20percent_2km.pdf", height = 6, width = 9)
@@ -219,10 +224,9 @@ ggsave("figures/abs_20percent_2km.png", height = 6, width = 9)
 #colourCount = length(unique(as.factor(all_vars_together_rel$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(neg_number_over_20))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 
   theme(axis.title.x=element_blank(),
@@ -232,7 +236,8 @@ all_vars_masked %>%
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.line.y=element_blank()) +
+        axis.line.y=element_blank(),
+        strip.background=element_blank())  +
   labs(fill="number of response 
        types altered by decreased 20%")
 #ggsave("figures/neg_20percent_2km.pdf", height = 6, width = 9)
@@ -242,10 +247,9 @@ ggsave("figures/neg_20percent_2km.png", height = 6, width = 9)
 #colourCount = length(unique(as.factor(pos_vars_together_rel$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(pos_number_over_20))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 
   theme(axis.title.x=element_blank(),
@@ -255,7 +259,8 @@ all_vars_masked %>%
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.line.y=element_blank()) +
+        axis.line.y=element_blank(),
+        strip.background=element_blank())  +
   labs(fill="number of response 
        types increased by > 20%")
 #ggsave("figures/pos_20percent_2km.pdf", height = 6, width = 9)
@@ -268,10 +273,9 @@ ggsave("figures/pos_20percent_2km.png", height = 6, width = 9)
 #colourCount = length(unique(as.factor(all_vars_together_rel$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(abs_number_over_30))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 
   theme(axis.title.x=element_blank(),
@@ -281,7 +285,8 @@ all_vars_masked %>%
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.line.y=element_blank()) +
+        axis.line.y=element_blank(),
+        strip.background=element_blank())  +
   labs(fill="number of response 
        types altered by > 30%")
 #ggsave("figures/abs_30percent_2km.pdf", height = 6, width = 9)
@@ -291,10 +296,9 @@ ggsave("figures/abs_30percent_2km.png", height = 6, width = 9)
 #colourCount = length(unique(as.factor(all_vars_together_rel$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(neg_number_over_30))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 
   theme(axis.title.x=element_blank(),
@@ -304,7 +308,8 @@ all_vars_masked %>%
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.line.y=element_blank()) +
+        axis.line.y=element_blank(),
+        strip.background=element_blank())  +
   labs(fill="number of response 
        types decreased by > 30%")
 #ggsave("figures/neg_30percent_2km.pdf", height = 6, width = 9)
@@ -314,10 +319,9 @@ ggsave("figures/neg_30percent_2km.png", height = 6, width = 9)
 #colourCount = length(unique(as.factor(pos_vars_together_rel$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(pos_number_over_30))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
-  facet_wrap(~species2, nrow=2) +
+  facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 
   theme(axis.title.x=element_blank(),
@@ -327,7 +331,8 @@ all_vars_masked %>%
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
-        axis.line.y=element_blank()) +
+        axis.line.y=element_blank(),
+        strip.background=element_blank())  +
   labs(fill="number of response 
        types increased by > 30%")
 #ggsave("figures/pos_30percent_2km.pdf", height = 6, width = 9)
