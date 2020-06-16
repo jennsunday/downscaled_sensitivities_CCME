@@ -159,13 +159,23 @@ table_results_12km<-rbind(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12)
 #combine into one table
 table_delta_masked<-rbind(table_results_2km, table_results_12km)
 
-
-
 #values are still in units of mmol/m^3.  To convert to ml/l, multiply by this:
 conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
 
 table_delta_masked<-table_delta_masked %>%
-  mutate(mean_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta))
+  mutate(mean_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta),
+         sd_delta=ifelse(variable=="oxygen", sd_delta*conv_oxy, sd_delta))
 
 write_csv(table_delta_masked, "processed_data/table_delta_masked.csv")
 
+table_delta_masked<-read_csv("processed_data/table_delta_masked.csv")
+
+
+table_delta_masked %>%
+  mutate(model=ifelse(model=="2km", "1.5km", model)) %>%
+  ggplot(aes(x=mean_delta, y=water_range, col=model)) +
+  facet_wrap(~variable, scales="free_x") +
+  geom_point() +
+  geom_errorbarh(aes(xmax=mean_delta+sd_delta, xmin=mean_delta-sd_delta), height=0.4) +
+  labs(x="delta", y="habitat zone")
+ggsave("figures/delta_plotted.png")

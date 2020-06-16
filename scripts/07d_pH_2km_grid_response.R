@@ -103,21 +103,27 @@ pH_10_relevant_layer_response<-pH_10_relevant_layer%>%
 
 
 #Now group by lat_long and species, then ask how many of each group are greater than 10% (need zeros)
-pHrel_greater_than_10percent<-pH_10_relevant_layer_response %>%
+pHrel_greater_than_percent<-pH_10_relevant_layer_response %>%
   separate(unique_response, sep="_and_", into=c("species", "response")) %>%
   group_by(latlong, species, no_env_data) %>%
-  summarize(pos_number_over_10=length(which(percentchangepH>10)),
-          neg_number_over_10=length(which(percentchangepH<(-10))),
-          abs_number_over_10=length(which(abs(percentchangepH)>10)),
-          num_responses=length(which(percentchangepH!="NA"))) %>%
+  summarise(pos_number_over_10=length(which(percentchangepH>=10)),
+            neg_number_over_10=length(which(percentchangepH<=(-10))),
+            abs_number_over_10=length(which(abs(percentchangepH)>=10)),
+            pos_number_over_20=length(which(percentchangepH>=20)),
+            neg_number_over_20=length(which(percentchangepH<=(-20))),
+            abs_number_over_20=length(which(abs(percentchangepH)>=20)),
+            pos_number_over_30=length(which(percentchangepH>=30)),
+            neg_number_over_30=length(which(percentchangepH<=(-30))),
+            abs_number_over_30=length(which(abs(percentchangepH)>=30)),
+            num_responses=length(which(percentchangepH!="NA"))) %>%
   separate(latlong, sep="_", into=c("lat", "long")) %>%
-  mutate(lat=as.numeric(lat), long=as.numeric(long)) %>%
-  mutate(pos_number_over_10=as.numeric(ifelse(   #get NAs in
-    no_env_data=="no_data", "NA", pos_number_over_10))) %>%
-  mutate(neg_number_over_10=as.numeric(ifelse(
-    no_env_data=="no_data", "NA", neg_number_over_10))) %>%
-  mutate(abs_number_over_10=as.numeric(ifelse(
-    no_env_data=="no_data", "NA", abs_number_over_10)))
+  mutate(lat=as.numeric(lat), long=as.numeric(long)) 
+
+#arg need to figure out how to make 0's NA.
+pHrel_greater_than_percent[which(pHrel_greater_than_percent$no_env_data=="no_data"),
+                            str_which(names(pHrel_greater_than_percent), "number_over")]<-NA
+
+
 
 #how many responses observed for each species?
-write_csv(pHrel_greater_than_10percent, "processed_data/pHrel_greater_than_10percent.csv")
+write_csv(pHrel_greater_than_percent, "processed_data/pHrel_greater_than_10percent.csv")

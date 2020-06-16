@@ -105,20 +105,25 @@ oxy_10_relevant_layer_response<-oxy_10_relevant_layer%>%
 
 
 #Now group by lat_long and species, then ask how many of each group are greater than 10% (need zeros)
-oxyrel_greater_than_10percent<-oxy_10_relevant_layer_response %>%
+oxyrel_greater_than_percent<-oxy_10_relevant_layer_response %>%
   separate(unique_response, sep="_and_", into=c("species", "response")) %>%
   group_by(latlong, species, no_env_data) %>%
-  summarize(pos_number_over_10=length(which(percentchangeoxy>10)),
-            neg_number_over_10=length(which(percentchangeoxy<(-10))),
-            abs_number_over_10=length(which(abs(percentchangeoxy)>10)),
+  summarise(pos_number_over_10=length(which(percentchangeoxy>=10)),
+            neg_number_over_10=length(which(percentchangeoxy<=(-10))),
+            abs_number_over_10=length(which(abs(percentchangeoxy)>=10)),
+            pos_number_over_20=length(which(percentchangeoxy>=20)),
+            neg_number_over_20=length(which(percentchangeoxy<=(-20))),
+            abs_number_over_20=length(which(abs(percentchangeoxy)>=20)),
+            pos_number_over_30=length(which(percentchangeoxy>=30)),
+            neg_number_over_30=length(which(percentchangeoxy<=(-30))),
+            abs_number_over_30=length(which(abs(percentchangeoxy)>=30)),
             num_responses=length(which(percentchangeoxy!="NA"))) %>%
   separate(latlong, sep="_", into=c("lat", "long")) %>%
-  mutate(lat=as.numeric(lat), long=as.numeric(long)) %>%
-  mutate(pos_number_over_10=as.numeric(ifelse(   #get NAs in
-    no_env_data=="no_data", "NA", pos_number_over_10))) %>%
-  mutate(neg_number_over_10=as.numeric(ifelse(
-    no_env_data=="no_data", "NA", neg_number_over_10))) %>%
-  mutate(abs_number_over_10=as.numeric(ifelse(
-    no_env_data=="no_data", "NA", abs_number_over_10)))
+  mutate(lat=as.numeric(lat), long=as.numeric(long)) 
 
-write_csv(oxyrel_greater_than_10percent, "processed_data/oxyrel_greater_than_10percent.csv")
+#make 0's back into NA in grid cells with no data
+oxyrel_greater_than_percent[which(oxyrel_greater_than_percent$no_env_data=="no_data"),
+                            str_which(names(oxyrel_greater_than_percent), "number_over")]<-NA
+
+
+write_csv(oxyrel_greater_than_percent, "processed_data/oxyrel_greater_than_percent.csv")

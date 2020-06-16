@@ -107,26 +107,36 @@ CO2_10_relevant_layer_response<-CO2_10_relevant_layer%>%
   mutate(no_env_data=ifelse(percentchangeCO2=="NaN", "no_data", "yes_data"))
 
 
-
 #Now group by lat_long and species, then ask how many of each group are greater than 10% (need zeros)
-CO2rel_greater_than_10percent<-CO2_10_relevant_layer_response %>%
+CO2rel_greater_than_percent<-CO2_10_relevant_layer_response %>%
   separate(unique_response, sep="_and_", into=c("species", "response")) %>%
-  group_by(species, latlong, no_env_data) %>%
-  summarise(pos_number_over_10=length(which(percentchangeCO2>10)),
-            neg_number_over_10=length(which(percentchangeCO2<(-10))),
-            abs_number_over_10=length(which(abs(percentchangeCO2)>10)),
+  group_by(species, latlong, no_env_data) %>% #group by lat long so to calculate summary within
+  summarise(pos_number_over_10=length(which(percentchangeCO2>=10)),
+            neg_number_over_10=length(which(percentchangeCO2<=(-10))),
+            abs_number_over_10=length(which(abs(percentchangeCO2)>=10)),
+            pos_number_over_20=length(which(percentchangeCO2>=20)),
+            neg_number_over_20=length(which(percentchangeCO2<=(-20))),
+            abs_number_over_20=length(which(abs(percentchangeCO2)>=20)),
+            pos_number_over_30=length(which(percentchangeCO2>=30)),
+            neg_number_over_30=length(which(percentchangeCO2<=(-30))),
+            abs_number_over_30=length(which(abs(percentchangeCO2)>=30)),
             num_responses=length(which(percentchangeCO2!="NA"))) %>%
   separate(latlong, sep="_", into=c("lat", "long")) %>%
-  mutate(lat=as.numeric(lat), long=as.numeric(long)) %>%
-  mutate(pos_number_over_10=as.numeric(ifelse(   #get NAs in
-    no_env_data=="no_data", "NA", pos_number_over_10))) %>%
-  mutate(neg_number_over_10=as.numeric(ifelse(
-    no_env_data=="no_data", "NA", neg_number_over_10))) %>%
-  mutate(abs_number_over_10=as.numeric(ifelse(
-    no_env_data=="no_data", "NA", abs_number_over_10)))
+  mutate(lat=as.numeric(lat), long=as.numeric(long)) 
 
-write_csv(CO2rel_greater_than_10percent, "processed_data/CO2rel_greater_than_10percent.csv")
+#make 0's when there is no data into NA
+CO2rel_greater_than_percent[which(CO2rel_greater_than_percent$no_env_data=="no_data"),
+                            str_which(names(CO2rel_greater_than_percent), "number_over")]<-NA
 
+#check that it worked
+CO2rel_greater_than_percent %>%
+  filter(no_env_data=="no_data")
+CO2rel_greater_than_percent %>%
+  filter(abs_number_over_30>0)
+
+write_csv(CO2rel_greater_than_percent, "processed_data/CO2rel_greater_than_10percent.csv")
+
+View(CO2rel_greater_than_10percent)
 
 #
 #
