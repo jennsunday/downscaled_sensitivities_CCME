@@ -17,8 +17,20 @@ oxyrel_greater_than_percent_12km<-read_csv("processed_data/oxyrel_greater_than_p
 CO2rel_greater_than_percent_12km<-read_csv("processed_data/CO2rel_greater_than_percent_big.csv")
 temprel_greater_than_percent_12km<-read_csv("processed_data/temprel_greater_than_percent_big.csv")
 pHrel_greater_than_percent_12km<-read_csv("processed_data/pHrel_greater_than_percent_big.csv")
+#read in 500m mask
+big_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_12km.csv", col_names=F)
 
+#reshape shelf mask into long data
+#reshape these into a long dataframe - 200 layer
+big_shelf_contour<-melt(big_shelf_mask) %>%
+  mutate(long=rep(1:dim(big_shelf_mask)[1], dim(big_shelf_mask)[2])) %>%
+  separate(variable, c(NA, "lat"), sep = "X", remove = TRUE) %>%
+  mutate(long=as.numeric(long))%>%
+  mutate(lat=as.numeric(lat))%>%
+  mutate(latlong=paste(long, lat, sep="_")) %>%
+  rename(shelf=value)
 
+#combine variables and extract new sums for each grid
 all_vars_together_rel_12km<-rbind(mutate(oxyrel_greater_than_10percent_12km, variable="oxy"),
                     mutate(CO2rel_greater_than_10percent_12km, variable="CO2"),
                     mutate(temprel_greater_than_10percent_12km, variable="temp"),
@@ -27,16 +39,15 @@ all_vars_together_rel_12km<-rbind(mutate(oxyrel_greater_than_10percent_12km, var
                   summarize(abs_number_over_10=sum(abs_number_over_10), 
                             pos_number_over_10=sum(pos_number_over_10), 
                             neg_number_over_10=sum(neg_number_over_10), 
+                            pos_number_over_20=sum(pos_number_over_20),
+                            neg_number_over_20=sum(neg_number_over_20),
+                            abs_number_over_20=sum(abs_number_over_20),
+                            pos_number_over_30=sum(pos_number_over_30),
+                            neg_number_over_30=sum(neg_number_over_30),
+                            abs_number_over_30=sum(abs_number_over_30),
                             num_responses=sum(num_responses)) %>%
                   ungroup() %>%
-                  mutate(abs_number_over_10=as.numeric(ifelse(
-                    no_env_data=="no_data", "NA", abs_number_over_10))) %>%
-                  mutate(pos_number_over_10=as.numeric(ifelse(
-                    no_env_data=="no_data", "NA", pos_number_over_10))) %>%
-                  mutate(neg_prop_over_10=as.numeric(ifelse(
-                    neg_number_over_10 =="no_data", "NA", neg_number_over_10))) %>%
-                  mutate(num_responses=as.numeric(ifelse(
-                    no_env_data=="no_data", "NA", num_responses)))
+
 
 
 #plot each ocean layer separately
