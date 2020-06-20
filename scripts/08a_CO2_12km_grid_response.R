@@ -17,7 +17,7 @@
 #libraries
 library(tidyverse)
 library(broom)
-library(cowplot)
+library(reshape2)
 library(gridExtra)
 library(RColorBrewer)
 

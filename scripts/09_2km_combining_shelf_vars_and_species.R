@@ -50,8 +50,7 @@ coastline_mask<-all_vars_together_rel %>%
   select(lat, long, land)
   
 #remove data outside of shelf or realm of model
-#need to in join by lat_long so that shelf is applied to whole dataset
-
+#need to join by lat_long so that shelf is applied to whole dataset
 all_vars_together_rel<-left_join(all_vars_together_rel, little_shelf_contour, 
                                  by = c("lat", "long")) 
 
@@ -95,7 +94,7 @@ all_vars_together_rel$species2 <- factor(all_vars_together_rel$species2,
 num_studs<-all_vars_together_rel %>%
   group_by(species2) %>%
   summarize(num= max(num_responses),
-            max10= max(as.numeric(na.omit(abs_number_over_10))),
+            max10=max(as.numeric(na.omit(abs_number_over_10))),
             max20=max(as.numeric(na.omit(abs_number_over_20))),
             max30=max(as.numeric(na.omit(abs_number_over_30))))
 
@@ -117,7 +116,7 @@ all_vars_masked<-all_vars_together_rel %>%
 
 ### plot ##########################################################
 ###10 %##############
-#get manual values
+#get manual values for colour scale
 colourCount = length(unique(as.factor(all_vars_masked$abs_number_over_10)))
 mycolscale<-(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) 
 mycolscale[1]<-"#d9d9d9" # make 0 value = grey
@@ -125,7 +124,6 @@ mycolscale[1]<-"#d9d9d9" # make 0 value = grey
 
 
 #absolute number of responses greater than 10
-colourCount = length(unique(as.factor(all_vars_masked$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(abs_number_over_10))) + 
   scale_fill_manual(values=mycolscale) +  
@@ -195,14 +193,14 @@ types increased by > 10%")
 ggsave("figures/pos_10percent_2km.png", height = 6, width = 9)
 
 
+
 ###20 %##############
 #absolute number of responses greater than 20
 #colourCount = length(unique(as.factor(all_vars_together_rel$abs_number_over_10)))
 all_vars_masked %>% 
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(abs_number_over_20))) + 
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) +
+  scale_fill_manual(values=mycolscale) +  
   geom_tile(data=coastline_mask, fill="grey") +
-  geom_tile(data=filter(all_vars_masked, abs_number_over_10==0), fill="grey", alpha=0.5) + 
   facet_wrap(~species2, nrow=2, labeller = labeller(species2 = label_wrap_gen(20))) +
   geom_text(data=num_studs, aes(x=165, y=15, label=num)) +
   theme_classic() + 

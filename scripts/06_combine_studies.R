@@ -9,8 +9,8 @@ library(broom)
 
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_cal.csv")
 
-
-
+sensitivity_by_study$treatment_var
+names(sensitivity_by_study)
 ###############
 #reorder species
 ###############
@@ -58,6 +58,8 @@ write_csv(sensitivity_by_group, "processed_data/sensitivity_by_group.csv")
 environmental_mean_deltas<-read_csv("processed_data/table_delta_masked.csv") %>%
   mutate(modelzone=water_range) %>%
   mutate(variable=ifelse(variable=="temp", "temperature", variable)) 
+
+
 
 #right_join so that each model and zone delta is joined by a sensitivity on the left
 all_models_response_estimates<-right_join(sensitivity_by_group, environmental_mean_deltas, by = c("treatment_var" = "variable"))

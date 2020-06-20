@@ -81,7 +81,6 @@ all_CO2_responses<-expand.grid(unique_response=CO2_sens$unique_response,
 #start with benthic
 join_grid_and_botCO2<-left_join(all_CO2_responses, littleCO2bot.df)
 join_response_and_botCO2<-left_join(join_grid_and_botCO2,filter(CO2_sens, zone=="benthic")) # just multiply by sensitivity in relevant zone
-head(join_response_and_botCO2)
 
 #then mesopelagic
 join_grid_and_200CO2<-left_join(all_CO2_responses, littleCO2200.df)
