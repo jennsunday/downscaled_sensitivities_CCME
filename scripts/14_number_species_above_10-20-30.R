@@ -198,7 +198,7 @@ species_responses_12 %>%
                                            axis.title.y=element_blank(),
                                            axis.text.y=element_blank(),
                                            axis.ticks.y=element_blank()) 
-ggsave("figures/num_species_10percent_12km.png", height = 6, width = 7)
+ggsave("figures/num_species_10percent_12km.png", height = 6, width = 5)
 
 #20%
 species_responses %>%
