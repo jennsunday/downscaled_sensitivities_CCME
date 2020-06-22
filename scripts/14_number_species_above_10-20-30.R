@@ -71,42 +71,6 @@ species_responses<-left_join(species_responses, little_shelf_contour,
                          no_env_data=="yes_data")
 
 
-
-#############
-colourCount = length(unique(as.factor(species_responses$number_species_over_30)))
-mycolscale<-(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(colourCount)) 
-mycolscale[1]<-"#d9d9d9" # make 0 value = grey
-
-species_responses %>%
-  ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(number_species_over_10))) + 
-  scale_fill_manual(values=mycolscale) +  
-  geom_tile(data=coastline_mask, fill="grey") +
-  labs(fill="number of species 
-       with greater than 10% responses") +
-  theme_classic()
-ggsave("figures/num_species_10percent_2km.png", height = 6, width = 7)
-
-
-species_responses %>%
-  ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(number_species_over_20))) + 
-  scale_fill_manual(values=mycolscale) +  
-  geom_tile(data=coastline_mask, fill="grey") +
-  labs(fill="number of species 
-       with greater than 20% responses") +
-  theme_classic()
-ggsave("figures/num_species_20percent_2km.png", height = 6, width = 7)
-
-
-species_responses %>%
-  ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(number_species_over_30))) + 
-  scale_fill_manual(values=mycolscale) +  
-  geom_tile(data=coastline_mask, fill="grey") +
-  labs(fill="number of species 
-       with greater than 30% responses") +
-  theme_classic()
-ggsave("figures/num_species_30percent_2km.png", height = 6, width = 7)
-
-
 #next, 12km
 oxy_responses_12km<-read_csv("processed_data/oxyrel_greater_than_percent_big.csv")
 CO2_responses_12km<-read_csv("processed_data/CO2rel_greater_than_percent_big.csv")
@@ -182,7 +146,8 @@ species_responses %>%
                                            axis.title.y=element_blank(),
                                            axis.text.y=element_blank(),
                                            axis.ticks.y=element_blank()) 
-ggsave("figures/num_species_10percent_2km.png", height = 6, width = 5)
+ggsave("figures/num_species_10percent_2km.png", height = 6, width = 7)
+ggsave("figures/num_species_10percent_2km.pdf", height = 6, width = 7)
 
 #12km
 species_responses_12 %>%
@@ -199,6 +164,7 @@ species_responses_12 %>%
                                            axis.text.y=element_blank(),
                                            axis.ticks.y=element_blank()) 
 ggsave("figures/num_species_10percent_12km.png", height = 6, width = 5)
+ggsave("figures/num_species_10percent_12km.pdf", height = 6, width = 5)
 
 #20%
 species_responses %>%
@@ -214,6 +180,7 @@ species_responses %>%
                           axis.text.y=element_blank(),
                           axis.ticks.y=element_blank()) 
 ggsave("figures/num_species_20percent_2km.png", height = 6, width = 7)
+ggsave("figures/num_species_20percent_2km.pdf", height = 6, width = 7)
 
 species_responses_12 %>%
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(number_species_over_10))) + 
@@ -229,6 +196,7 @@ species_responses_12 %>%
                                            axis.text.y=element_blank(),
                                            axis.ticks.y=element_blank()) 
 ggsave("figures/num_species_20percent_12km.png", height = 6, width = 5)
+ggsave("figures/num_species_20percent_12km.pdf", height = 6, width = 5)
 
 #30%
 species_responses %>%
@@ -244,6 +212,7 @@ species_responses %>%
                            axis.text.y=element_blank(),
                            axis.ticks.y=element_blank()) 
 ggsave("figures/num_species_30percent_2km.png", height = 6, width = 7)
+ggsave("figures/num_species_30percent_2km.pdf", height = 6, width = 7)
 
 species_responses_12 %>%
   ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(number_species_over_30))) + 
@@ -259,5 +228,6 @@ species_responses_12 %>%
                                           axis.text.y=element_blank(),
                                           axis.ticks.y=element_blank()) 
 ggsave("figures/num_species_30percent_12km.png", height = 6, width = 5)
+ggsave("figures/num_species_30percent_12km.pdf", height = 6, width = 5)
 
 
