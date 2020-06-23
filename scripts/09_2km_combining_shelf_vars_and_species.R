@@ -8,13 +8,16 @@ library(gridExtra)
 library(RColorBrewer)
 
 #read in data
-oxyrel_greater_than_10percent<-read_csv("processed_data/oxyrel_greater_than_10percent.csv")
-CO2rel_greater_than_10percent<-read_csv("processed_data/CO2rel_greater_than_10percent.csv")
-temprel_greater_than_10percent<-read_csv("processed_data/temprel_greater_than_10percent.csv")
-pHrel_greater_than_10percent<-read_csv("processed_data/pHrel_greater_than_10percent.csv")
+oxyrel_greater_than_percent<-read_csv("processed_data/oxyrel_greater_than_percent.csv")
+CO2rel_greater_than_percent<-read_csv("processed_data/CO2rel_greater_than_percent.csv")
+temprel_greater_than_percent<-read_csv("processed_data/temprel_greater_than_percent.csv")
+pHrel_greater_than_percent<-read_csv("processed_data/pHrel_greater_than_percent.csv")
 #read in 500m mask
 little_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_2km.csv", col_names=F)
 
+
+oxyrel_greater_than_percent%>% filter(species=="sablefish" &
+                                          abs_number_over_20>0)
 #reshape shelf mask into long data
 #reshape these into a long dataframe - 200 layer
 little_shelf_contour<-melt(little_shelf_mask) %>%
@@ -26,10 +29,10 @@ little_shelf_contour<-melt(little_shelf_mask) %>%
   rename(shelf=value)
 
 #combine variables and extract new sums for each grid
-all_vars_together_rel<-rbind(mutate(oxyrel_greater_than_10percent, variable="oxy"),
-                    mutate(CO2rel_greater_than_10percent, variable="CO2"),
-                    mutate(temprel_greater_than_10percent, variable="temp"),
-                    mutate(pHrel_greater_than_10percent, variable="pH")) %>%
+all_vars_together_rel<-rbind(mutate(oxyrel_greater_than_percent, variable="oxy"),
+                    mutate(CO2rel_greater_than_percent, variable="CO2"),
+                    mutate(temprel_greater_than_percent, variable="temp"),
+                    mutate(pHrel_greater_than_percent, variable="pH")) %>%
                   group_by(lat, long, species, no_env_data) %>%
                   summarize(abs_number_over_10=sum(abs_number_over_10), 
                             pos_number_over_10=sum(pos_number_over_10), 

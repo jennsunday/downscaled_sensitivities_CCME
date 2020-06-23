@@ -120,10 +120,11 @@ temprel_greater_than_percent<-temp_10_relevant_layer_response %>%
   separate(latlong, sep="_", into=c("lat", "long")) %>%
   mutate(lat=as.numeric(lat), long=as.numeric(long)) 
 
+
 #make 0's NA in grid cells with no data
 temprel_greater_than_percent[which(temprel_greater_than_percent$no_env_data=="no_data"),
                             str_which(names(temprel_greater_than_percent), "number_over")]<-NA
 
 
 #how many responses observed for each species?
-write_csv(temprel_greater_than_percent, "processed_data/temprel_greater_than_10percent.csv")
+write_csv(temprel_greater_than_percent, "processed_data/temprel_greater_than_percent.csv")

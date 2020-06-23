@@ -88,7 +88,7 @@ all_models_response_estimates %>%
   labs(y = "Species", x="Percent change in biological rate") +
   geom_errorbarh(aes(xmin=(percentchange_lo_95), 
                      xmax=(percentchange_hi_95)), height=0) +
-  geom_vline(xintercept = c(-10, 10), linetype="dotted") +
+  geom_vline(xintercept = c(-20, 20), linetype="dotted") +
   labs(col = "treatment variable", shape="response type")
 ggsave("figures/meta_sensitivities_allmodels.png", width = 10, height = 8)
 ggsave("figures/meta_sensitivities_allmodels.pdf", width = 10, height = 8)
@@ -111,7 +111,7 @@ domain_relavant_layer_12km %>%
        col = "treatment variable", shape="response type") +
   geom_errorbarh(aes(xmin=(percentchange_lo_95), 
                      xmax=(percentchange_hi_95)), height=0) +
-  geom_vline(xintercept = c(-10, 10), linetype="dotted") 
+  geom_vline(xintercept = c(-20, 20), linetype="dotted") 
 ggsave("figures/meta_sensitivities_relevant_12km.png", width = 7, height = 4)
 ggsave("figures/meta_sensitivities_relevant_12km.pdf", width = 7, height = 4)
 
@@ -126,7 +126,7 @@ MI_index_response%>%
   coord_cartesian(xlim=c(-95,95)) +
   geom_point() + theme_bw() +
   labs(y = "Species", x="Percent change in biological rate") +
-  geom_vline(xintercept = c(-10, 10), linetype="dotted") 
+  geom_vline(xintercept = c(-20, 20), linetype="dotted") 
 ggsave("figures/MI_sensitivities.png", width = 6, height = 1)
 ggsave("figures/MI_sensitivities.pdf", width = 6, height = 1)
 
@@ -151,6 +151,6 @@ relavant_layer_2km %>%
        col = "treatment variable", shape="response type") +
   geom_errorbarh(aes(xmin=(percentchange_lo_95), 
                      xmax=(percentchange_hi_95)), height=0) +
-  geom_vline(xintercept = c(-10, 10), linetype="dotted") 
+  geom_vline(xintercept = c(-20, 20), linetype="dotted") 
 ggsave("figures/meta_sensitivities_relevant_2km.png", width = 7, height = 4)
 ggsave("figures/meta_sensitivities_relevant_2km.pdf", width = 7, height = 4)

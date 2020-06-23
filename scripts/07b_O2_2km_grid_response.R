@@ -27,10 +27,14 @@ setwd("/Users/Jennifer_Sunday/Dropbox/UW_Schmidt/data/")
 sensitivity_by_group<-read_csv("processed_data/sensitivity_by_group.csv")
 names(sensitivity_by_group)
 
+#oxygen conversion from mmol/m3 to ml/l
+conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
+
 #read in Sam's maps
-littleoxy200<-read_csv("raw_data/downscaled_climate_data/2km_delta_oxy_200m.csv", col_names=F)
-littleoxybot<-read_csv("raw_data/downscaled_climate_data/2km_delta_oxy_bot.csv", col_names=F)
-littleoxysurf<-read_csv("raw_data/downscaled_climate_data/2km_delta_oxy_surf.csv", col_names=F)
+littleoxy200<-read_csv("raw_data/downscaled_climate_data/2km_delta_oxy_200m.csv", col_names=F)*conv_oxy
+littleoxybot<-read_csv("raw_data/downscaled_climate_data/2km_delta_oxy_bot.csv", col_names=F)*conv_oxy
+littleoxysurf<-read_csv("raw_data/downscaled_climate_data/2km_delta_oxy_surf.csv", col_names=F)*conv_oxy
+
 
 #reshape these into a long dataframe
 littleoxy200.df<-melt(littleoxy200) %>%
@@ -127,3 +131,6 @@ oxyrel_greater_than_percent[which(oxyrel_greater_than_percent$no_env_data=="no_d
 
 
 write_csv(oxyrel_greater_than_percent, "processed_data/oxyrel_greater_than_percent.csv")
+
+oxyrel_greater_than_percent %>% filter(species=="sablefish" &
+                                         neg_number_over_20>0)

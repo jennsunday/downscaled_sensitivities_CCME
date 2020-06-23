@@ -5,7 +5,6 @@
 
 library(ggplot2)
 library(tidyverse)
-library(maps)
 library(reshape2)
 library(gridExtra)
 

@@ -8,17 +8,15 @@ library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(broom)
-library(cowplot)
 library(reshape2)
 library(gridExtra)
 library(RColorBrewer)
 
 #read in sensitivity by study
-setwd("/Users/Jennifer_Sunday/Dropbox/UW_Schmidt/data/")
 sensitivity_by_group<-read_csv("processed_data/sensitivity_by_group.csv")
 
 #read in benthic map 2km
-littleoxybot<-read_csv("processed_data/2km_delta_oxy_bot.csv", col_names=F)
+littleoxybot<-read_csv("raw_data/downscaled_climate_data/2km_delta_oxy_bot.csv", col_names=F)
 
 #reshape these into a long dataframe - bot layer
 littleoxybot.df<-melt(littleoxybot) %>%
@@ -75,7 +73,7 @@ oxybot_responses<-join_response_and_botoxy %>%
                                           "NA", number_over_30)))
 
 oxybot_responses %>% 
-  ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = number_over_10)) + 
+  ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = number_over_20)) + 
   scale_fill_distiller(palette="YlOrRd", direction=1, na.value="grey") +
   facet_wrap(~species, nrow=2)
 

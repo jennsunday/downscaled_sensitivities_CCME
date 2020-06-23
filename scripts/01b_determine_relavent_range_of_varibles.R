@@ -1,5 +1,8 @@
 #goal: get model-driven relevant range for each stressor
 
+# load libraries ----------------------------------------------------------
+library(tidyverse)
+
 #read in 500m mask
 little_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_2km.csv", col_names=F)
 big_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_12km.csv", col_names=F)
@@ -166,7 +169,7 @@ combined_oxy<-rbind(present_oxy_surf_12km.df, future_oxy_surf_12km.df,
 combined_pH<-rbind(present_pH_surf_12km.df, future_pH_surf_12km.df,
                     present_pH_bot_12km.df, future_pH_bot_12km.df)
 
-#oxygen conversion
+#oxygen conversion from mmol/m3 to ml/l
 conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
 
 max_temp<-max(combined_temp$value, na.rm=T)

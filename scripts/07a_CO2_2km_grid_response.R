@@ -23,7 +23,6 @@ library(RColorBrewer)
 
 # go through and recalculate change by life-history specific water depth. ***
 #read in sensitivity by study
-setwd("/Users/Jennifer_Sunday/Dropbox/UW_Schmidt/data/")
 sensitivity_by_group<-read_csv("processed_data/sensitivity_by_group.csv")
 
 #read in Sam's maps 
@@ -66,7 +65,7 @@ CO2_sens<-sensitivity_by_group %>%
   mutate(English_Name=gsub("&","", English_Name)) %>%
   mutate(English_Name=gsub("-","", English_Name))
 
-#make a dataframe with weighted mean sensitivity, species name and respone type, and zone
+#make a dataframe with weighted mean sensitivity, species name and response type, and zone
 CO2_sens<-CO2_sens %>%
   unite(., col=unique_response, English_Name, response_type, sep="_and_") %>% # make a new column comibining two columns, called unique response
   select(unique_response, weighted_sensitivity, zone) 
@@ -123,6 +122,7 @@ CO2rel_greater_than_percent<-CO2_10_relevant_layer_response %>%
   separate(latlong, sep="_", into=c("lat", "long")) %>%
   mutate(lat=as.numeric(lat), long=as.numeric(long)) 
 
+
 #make 0's when there is no data into NA
 CO2rel_greater_than_percent[which(CO2rel_greater_than_percent$no_env_data=="no_data"),
                             str_which(names(CO2rel_greater_than_percent), "number_over")]<-NA
@@ -133,7 +133,7 @@ CO2rel_greater_than_percent %>%
 CO2rel_greater_than_percent %>%
   filter(abs_number_over_30>0)
 
-write_csv(CO2rel_greater_than_percent, "processed_data/CO2rel_greater_than_10percent.csv")
+write_csv(CO2rel_greater_than_percent, "processed_data/CO2rel_greater_than_percent.csv")
 
 View(CO2rel_greater_than_10percent)
 
