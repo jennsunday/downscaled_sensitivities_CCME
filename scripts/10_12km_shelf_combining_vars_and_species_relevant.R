@@ -20,6 +20,7 @@ pHrel_greater_than_percent_12km<-read_csv("processed_data/pHrel_greater_than_per
 #read in 500m mask
 big_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_12km.csv", col_names=F)
 
+
 #reshape shelf mask into long data
 #reshape these into a long dataframe - 200 layer
 big_shelf_contour<-melt(big_shelf_mask) %>%

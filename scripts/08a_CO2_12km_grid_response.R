@@ -133,3 +133,4 @@ CO2rel_greater_than_percent_big %>%
   filter(abs_number_over_30>0)
 
 write_csv(CO2rel_greater_than_percent_big, "processed_data/CO2rel_greater_than_percent_big.csv")
+

@@ -22,6 +22,8 @@ library(RColorBrewer)
 oxy_responses_2km<-read_csv("processed_data/oxyrel_greater_than_10percent.csv")
 CO2_responses_2km<-read_csv("processed_data/CO2rel_greater_than_10percent.csv")
 temp_responses_2km<-read_csv("processed_data/temprel_greater_than_10percent.csv")
+pH_responses_2km<-read_csv("processed_data/pHrel_greater_than_10percent.csv")
+
 #read in 500m mask
 little_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_2km.csv", col_names=F)
 
@@ -44,7 +46,8 @@ little_shelf_contour<-melt(little_shelf_mask) %>%
 #combine all environmental variables
 species_responses<-rbind(oxy_responses_2km, 
                         CO2_responses_2km, 
-                        temp_responses_2km) %>%
+                        temp_responses_2km, 
+                        pH_responses_2km) %>%
     group_by(lat, long, species, no_env_data) %>%
     summarize(number_responses_over_10=length(which(abs_number_over_10>=1)),
               number_responses_over_20=length(which(abs_number_over_20>=1)),
@@ -75,13 +78,15 @@ species_responses<-left_join(species_responses, little_shelf_contour,
 oxy_responses_12km<-read_csv("processed_data/oxyrel_greater_than_percent_big.csv")
 CO2_responses_12km<-read_csv("processed_data/CO2rel_greater_than_percent_big.csv")
 temp_responses_12km<-read_csv("processed_data/temprel_greater_than_percent_big.csv")
+pH_responses_12km<-read_csv("processed_data/pHrel_greater_than_percent_big.csv")
 
 #read in 500m mask
 big_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_12km.csv", col_names=F)
 
 num_species<-c(unique(oxy_responses_12km$species), 
                unique(CO2_responses_12km$species),  
-               unique(temp_responses_12km$species)) %>%
+               unique(temp_responses_12km$species),  
+               unique(pH_responses_12km$species)) %>%
   unique(.) %>%
   length(.)
 
@@ -95,10 +100,12 @@ big_shelf_contour<-melt(big_shelf_mask) %>%
   mutate(latlong=paste(long, lat, sep="_")) %>%
   rename(shelf=value)
 
+
 #combine all environmental variables
 species_responses_12<-rbind(oxy_responses_12km, 
                          CO2_responses_12km, 
-                         temp_responses_12km) %>%
+                         temp_responses_12km,
+                         pH_responses_12km) %>%
   group_by(lat, long, species, no_env_data) %>%
   summarize(number_responses_over_10=length(which(abs_number_over_10>=1)),
             number_responses_over_20=length(which(abs_number_over_20>=1)),
@@ -124,6 +131,8 @@ species_responses_12<-left_join(species_responses_12, big_shelf_contour,
   filter(shelf==1, 
          no_env_data=="yes_data")
 
+
+species_responses_12
 #############
 mycolscale<-(values = colorRampPalette(brewer.pal(9, "YlOrRd"))(10)) 
 mycolscalefixed <- c("1" = mycolscale[1], 
@@ -183,7 +192,7 @@ ggsave("figures/num_species_20percent_2km.png", height = 6, width = 7)
 ggsave("figures/num_species_20percent_2km.pdf", height = 6, width = 7)
 
 species_responses_12 %>%
-  ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(number_species_over_10))) + 
+  ggplot(aes(x = lat, y = long)) + geom_tile(aes(fill = as.factor(number_species_over_20))) + 
   scale_fill_manual(values=mycolscalefixed) +  
   geom_tile(data=coastline_mask_12, fill="grey") +
   labs(fill="number of species 
