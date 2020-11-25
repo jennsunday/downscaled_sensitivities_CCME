@@ -240,7 +240,7 @@ all_vars_masked %>%
         axis.line.y=element_blank(),
         strip.background=element_blank())  +
   labs(fill="number of response 
-       types altered by decreased 20%")
+       types decreased by > 20%")
 #ggsave("figures/neg_20percent_2km.pdf", height = 6, width = 9)
 ggsave("figures/neg_20percent_2km.png", height = 6, width = 9)
 
