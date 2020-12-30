@@ -9,8 +9,8 @@ data<-read_csv(file="raw_data/direct_responses_data_jan2.csv")
 data$study<-as.factor(paste(data$Author, data$Pub_Year, data$English_Name, 
                             data$Life_stage, data$Response_variable, data$treatment_var))
 #check units of oxygen entered
-View(data %>%
-  filter(treatment_var=="oxygen")) 
+#View(data %>%
+#  filter(treatment_var=="oxygen")) 
 #checked website, seems fine
 
 # make upper and lower SE, convert 95CI to upper and lower SE for some data
@@ -38,13 +38,15 @@ filter(data, response<0)
 data<-data %>% 
   group_by(study) %>%
   mutate(max_response=max(response),   #add columns of max response and log response relative to max
-         rel_response=(response/max_response), #log of relative response to max
+         rel_response=(response/max_response), #relative response to max
          rel_upperSE=(upperSE/max_response),
          rel_lowerSE=(lowerSE/max_response),
          SE_response_for_resampling=rel_upperSE-rel_response) %>%
   ungroup()
 plot(data$SE_response_for_resampling)
 
+
+filter(data, rel_response<0)
 
 #calculate variables within each study
 #potentially delete this:
@@ -77,7 +79,7 @@ data<-data %>%
                              data$treatment_var=="pH"~pH,
                              TRUE ~ -99))
 
-data$treat_value
+filter(data,treat_value==(-99))
 
 write.csv(data, "processed_data/200519_Schmidt_biotic_responses_data.csv")
 
