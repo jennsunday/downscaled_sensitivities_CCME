@@ -10,7 +10,7 @@
 #for regression-style data, use predict with SE
 
 
-#librarieslibrary(nlme) 
+library(nlme) 
 library(tidyverse)
 library(broom)
 
@@ -48,9 +48,9 @@ seq_x_per_study_2<-left_join(seq_x_per_study, one_entry_per_study, by="unique_st
 #using iterated models from last script
 
 #initialize columns to store outouts
-seq_x_per_study_2$mean_pred<-NA
-seq_x_per_study_2$upp_pred<-NA
-seq_x_per_study_2$low_pred<-NA
+seq_x_per_study_2$mean_pred<-as.numeric(NA)
+seq_x_per_study_2$upp_pred<-as.numeric(NA)
+seq_x_per_study_2$low_pred<-as.numeric(NA)
 for(i in seq_x_per_study_2$unique_study){ # i is every unique study id repeated for each of 10 input x values
   for(j in 1:10){ #but do this for each input x value
     test<-filter(lm_anova_resampled, unique_study==i, term=="treat_value")$estimate*
@@ -73,9 +73,10 @@ for(i in reg_studies){
     filter(study_design %in% c("regression"))  %>%
     filter(unique_study==i) %>%
     lm(rel_response~treat_value, data=.)
-  mod_pred<-predict.lm(mod, newdata=seq_x_per_study_2 %>%
-               filter(unique_study==i) %>%
-               mutate(treat_value=seq_x_val), se.fit=TRUE)
+  newdata_i<-seq_x_per_study_2 %>%
+    filter(unique_study==i) %>%
+    mutate(treat_value=seq_x_val)
+  mod_pred<-predict.lm(mod, newdata=newdata_i, se.fit=TRUE)
   seq_x_per_study_2[seq_x_per_study_2$unique_study==i,]$mean_pred[1:10]<-mod_pred$fit
   seq_x_per_study_2[seq_x_per_study_2$unique_study==i,]$upp_pred[1:10]<-mod_pred$fit+mod_pred$se.fit
   seq_x_per_study_2[seq_x_per_study_2$unique_study==i,]$low_pred[1:10]<-mod_pred$fit-mod_pred$se.fit

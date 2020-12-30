@@ -11,13 +11,23 @@ sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_cal.csv")
 
 sensitivity_by_study$treatment_var
 names(sensitivity_by_study)
+
+
 ###############
-#reorder species
+#assign zone to species
 ###############
+#all adults can be considered benthic except for pink salmon = mesopelagic
+#propagules are sometimes benthic sometimes not, assign based on specific life stage used
+unique(sensitivity_by_study$Life_stage)
 sensitivity_by_study<-sensitivity_by_study%>%
   mutate(zone=case_when(Life_stage %in% c("larvae", "megalopa", "Larvae", "Brachiolaria larva") ~ "pelagic",
                         English_Name =="Pink Salmon" ~ "mesopelagic",
-                        TRUE ~ "benthic"))
+                        TRUE ~ "benthic")) #all others are benthic
+
+
+###############
+#reorder species
+###############
 
 #arrange order of species
 order_desired<-c("Pink Salmon", "blue & black rockfish", 

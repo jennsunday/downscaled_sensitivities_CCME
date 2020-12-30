@@ -2,7 +2,6 @@
 #idea: resample from distribution of values with mean and standard error 
 #equal to standard deviation of the mean
 
-#librarieslibrary(nlme) 
 library(ggplot2)
 library(tidyverse)
 library(broom)
