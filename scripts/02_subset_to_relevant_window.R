@@ -4,7 +4,7 @@ library(tidyverse)
 library(reshape2)
 
 #read in the procesed data
-data<-read.csv("processed_data/200519_Schmidt_biotic_responses_data.csv")
+data<-read.csv("processed_data/201230_Schmidt_biotic_responses_data.csv")
 
 #remove very very high CO2 values
 data <- data %>%
@@ -57,9 +57,7 @@ write_csv(data_in_window, "processed_data/data_in_window.csv")
 #quick plot all the data - relative responses
 data_in_window %>% 
   ggplot(aes(y=rel_response, x=treat_value, group=study, color=response_type)) + geom_point() +
-  facet_grid(English_Name ~ treatment_var, scales = "free_x") + theme_bw() + 
-  stat_smooth(data=subset(data_in_window, data$study_design=="regression"), span=4) +
-  geom_line(data=subset(data_in_window, data$study_design %in% c("anova", "multi-level anova"))) 
+  facet_grid(English_Name ~ treatment_var, scales = "free_x") + theme_bw() 
 
 #
 #
