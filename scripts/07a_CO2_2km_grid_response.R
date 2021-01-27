@@ -26,9 +26,9 @@ library(RColorBrewer)
 sensitivity_by_group<-read_csv("processed_data/sensitivity_by_group.csv")
 
 #read in Sam's maps 
-littleCO2200<-read_csv("raw_data/downscaled_climate_data/2km_delta_pCO2_200m.csv", col_names=F)
-littleCO2bot<-read_csv("raw_data/downscaled_climate_data/2km_delta_pCO2_bot.csv", col_names=F)
-littleCO2surf<-read_csv("raw_data/downscaled_climate_data/2km_delta_pCO2_surf.csv", col_names=F)
+littleCO2200<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_200m.csv", col_names=F)
+littleCO2bot<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_bot.csv", col_names=F)
+littleCO2surf<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_surf.csv", col_names=F)
 
 #reshape these into a long dataframe - 200 layer
 littleCO2200.df<-melt(littleCO2200) %>%
@@ -135,7 +135,6 @@ CO2rel_greater_than_percent %>%
 
 write_csv(CO2rel_greater_than_percent, "processed_data/CO2rel_greater_than_percent.csv")
 
-View(CO2rel_greater_than_10percent)
 
 #
 #

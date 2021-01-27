@@ -9,37 +9,37 @@ library(reshape2)
 library(gridExtra)
 
 #read in 500m mask
-little_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_2km.csv", col_names=F)
-big_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_12km.csv", col_names=F)
+little_shelf_mask<-read_csv("raw_data/new_downscaled_climate_data/mask_500m_2km.csv", col_names=F)
+big_shelf_mask<-read_csv("raw_data/new_downscaled_climate_data/mask_500m_12km.csv", col_names=F)
 
 #0 marks ocean points with depth > 500m, 1 marks ocean points with depth <= 500m
 
 #read in Sam's delta values 2km
-CO2_200_2km<-read_csv("raw_data/downscaled_climate_data/2km_delta_pCO2_200m.csv", col_names=F)
+CO2_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_200m.csv", col_names=F)
 CO2_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_bot.csv", col_names=F)
 CO2_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_surf.csv", col_names=F)
-temp_200_2km<-read_csv("raw_data/downscaled_climate_data/2km_delta_temp_200m.csv", col_names=F)
+temp_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_200m.csv", col_names=F)
 temp_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_bot.csv", col_names=F)
 temp_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_surf.csv", col_names=F)
-oxy_200_2km<-read_csv("raw_data/downscaled_climate_data/2km_delta_oxy_200m.csv", col_names=F)
+oxy_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_200m.csv", col_names=F)
 oxy_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_bot.csv", col_names=F)
 oxy_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_surf.csv", col_names=F)
-pH_200_2km<-read_csv("raw_data/downscaled_climate_data/2km_delta_pH_200m.csv", col_names=F)
+pH_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_200m.csv", col_names=F)
 pH_bot_2km<-read_csv("raw_data/downscaled_climate_data/2km_delta_pH_bot.csv", col_names=F)
 pH_surf_2km<-read_csv("raw_data/downscaled_climate_data/2km_delta_pH_surf.csv", col_names=F)
 
 
 #read in Sam's delta values 12km
-CO2_200_12km<-read_csv("raw_data/downscaled_climate_data/12km_delta_pCO2_200m.csv", col_names=F)
+CO2_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_200m.csv", col_names=F)
 CO2_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_bot.csv", col_names=F)
 CO2_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_surf.csv", col_names=F)
-temp_200_12km<-read_csv("raw_data/downscaled_climate_data/12km_delta_temp_200m.csv", col_names=F)
+temp_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_temp_200m.csv", col_names=F)
 temp_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_temp_bot.csv", col_names=F)
 temp_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_temp_surf.csv", col_names=F)
-oxy_200_12km<-read_csv("raw_data/downscaled_climate_data/12km_delta_oxy_200m.csv", col_names=F)
+oxy_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_200m.csv", col_names=F)
 oxy_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_bot.csv", col_names=F)
 oxy_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_surf.csv", col_names=F)
-pH_200_12km<-read_csv("raw_data/downscaled_climate_data/12km_delta_pH_200m.csv", col_names=F)
+pH_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pH_200m.csv", col_names=F)
 pH_bot_12km<-read_csv("raw_data/downscaled_climate_data/12km_delta_pH_bot.csv", col_names=F)
 pH_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_delta_pH_surf.csv", col_names=F)
 
@@ -178,3 +178,4 @@ table_delta_masked %>%
   geom_errorbarh(aes(xmax=mean_delta+sd_delta, xmin=mean_delta-sd_delta), height=0.4) +
   labs(x="delta", y="habitat zone")
 ggsave("figures/delta_plotted.png")
+

@@ -26,9 +26,9 @@ sensitivity_by_group<-read_csv("processed_data/sensitivity_by_group.csv")
 names(sensitivity_by_group)
 
 #read in Sam's maps
-littletemp200<-read_csv("raw_data/downscaled_climate_data/2km_delta_temp_200m.csv", col_names=F)
-littletempbot<-read_csv("raw_data/downscaled_climate_data/2km_delta_temp_bot.csv", col_names=F)
-littletempsurf<-read_csv("raw_data/downscaled_climate_data/2km_delta_temp_surf.csv", col_names=F)
+littletemp200<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_200m.csv", col_names=F)
+littletempbot<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_bot.csv", col_names=F)
+littletempsurf<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_surf.csv", col_names=F)
 
 #reshape these into a long dataframe
 littletemp200.df<-melt(littletemp200) %>%

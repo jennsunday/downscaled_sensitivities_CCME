@@ -1,5 +1,5 @@
 #goal: plot model fits over raw data
-#this is as an extension of script 04, need to have "lm_anova_resampled" object in environment
+#this is an extension of script 04, need to have "lm_anova_resampled" object in environment
 
 #do this by:
 #expand an empty df so that for each study there are n=10 rows between minimum and maximum treatment values
@@ -63,6 +63,7 @@ for(i in seq_x_per_study_2$unique_study){ # i is every unique study id repeated 
 }
 #ok, predictions made only for anova-style data so far.
 
+
 #make a vector of regression study i.d.s
 reg_studies<-filter(seq_x_per_study_2, study_design == c("regression"))$unique_study
 
@@ -91,6 +92,7 @@ write.csv(seq_x_per_study_2, "processed_data/data_to_predict.csv")
 #plot
 data_to_predict<-read_csv("processed_data/data_to_predict.csv")
 data_in_window<-read_csv("processed_data/data_in_window.csv")
+
 
 data_in_window %>%
   ggplot(aes(x=treat_value, y=rel_response, col=response_type)) + geom_point() +

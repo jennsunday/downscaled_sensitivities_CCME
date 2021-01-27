@@ -10,7 +10,7 @@ library(broom)
 data_in_window<-read_csv("processed_data/data_in_window.csv")
 
 ################################
-#simalate data for Anova-style experiments
+#simulate data for Anova-style experiments
 #with N=sample size
 #then fit model, iterate
 ################################
@@ -23,11 +23,9 @@ anova_data<-data_in_window %>%
 #expand anova df by sample size of each row
 anova_data_expanded<- anova_data[rep(seq.int(1,nrow(anova_data)), anova_data$sample_size),]
 
-
-
 #simulate regression-style data from anova data in 5000 iterations, fit lms through them
 lm_anova_resampled<-data.frame()
-for(i in 1:100){ #change back to 5000 eventually
+for(i in 1:10){ #change back to 5000 eventually
   lme_rep<-anova_data_expanded %>%
     mutate(simulated_response=rnorm(rel_response, 
                                    mean=rel_response, 
@@ -38,10 +36,11 @@ for(i in 1:100){ #change back to 5000 eventually
     mutate(replicate=i) %>%
     ungroup()
     lm_anova_resampled<-bind_rows(lme_rep, lm_anova_resampled)} 
-#naw have slope and intercept of n models fit to anova-style data
+#now have slope and intercept of n models fit to anova-style data
 #bunch of warnings - lm fit to 2 data points - that's ok.
 
-#get a summary of simluated lm's from anova data
+
+#get a summary of simulated lm's from anova data
 lm_by_group_summary<-lm_anova_resampled %>%
   group_by(Author, Pub_Year, English_Name, Life_stage, 
            Response_variable, response_type, unique_study, treatment_var, rate_or_biomass, response_type_2, term) %>%

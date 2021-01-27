@@ -5,6 +5,7 @@ library(tidyverse)
 #### Step 2: read in the data
 data<-read_csv(file="raw_data/direct_responses_data_jan2.csv")
 
+
 #make a unique identifier for each author, pub_year, and response_variable combination
 data$study<-as.factor(paste(data$Author, data$Pub_Year, data$English_Name, 
                             data$Life_stage, data$Response_variable, data$treatment_var))
@@ -52,8 +53,9 @@ filter(data, rel_response<0)
 
 #change treatment_var from CO2 to pH if only pH data are available
 data<-data %>%
-  mutate(treatment_var=ifelse(!is.na(data$pH) & is.na(data$CO2), 
+  mutate(treatment_var=ifelse(!is.na(data$pH) & is.na(data$CO2) & treatment_var=="CO2", 
                                    "pH", treatment_var))
+
 
 #add a column with the important treatment value
 data<-data %>%

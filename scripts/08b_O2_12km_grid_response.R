@@ -29,9 +29,9 @@ names(sensitivity_by_group)
 conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
 
 #read in Sam's maps
-bigoxy200<-read_csv("raw_data/downscaled_climate_data/12km_delta_oxy_200m.csv", col_names=F)*conv_oxy
-bigoxybot<-read_csv("raw_data/downscaled_climate_data/12km_delta_oxy_bot.csv", col_names=F)*conv_oxy
-bigoxysurf<-read_csv("raw_data/downscaled_climate_data/12km_delta_oxy_surf.csv", col_names=F)*conv_oxy
+bigoxy200<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_200m.csv", col_names=F)*conv_oxy
+bigoxybot<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_bot.csv", col_names=F)*conv_oxy
+bigoxysurf<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_surf.csv", col_names=F)*conv_oxy
 
 #reshape these into a long dataframe - 200 layer
 bigoxy200.df<-melt(bigoxy200) %>%

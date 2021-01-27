@@ -2,34 +2,35 @@
 
 # load libraries ----------------------------------------------------------
 library(tidyverse)
+library(reshape2)
 
 #read in 500m mask
-little_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_2km.csv", col_names=F)
-big_shelf_mask<-read_csv("raw_data/downscaled_climate_data/mask_500m_12km.csv", col_names=F)
+little_shelf_mask<-read_csv("raw_data/new_downscaled_climate_data/mask_500m_2km.csv", col_names=F)
+big_shelf_mask<-read_csv("raw_data/new_downscaled_climate_data/mask_500m_12km.csv", col_names=F)
 
 #temp - just surface
-present_temp_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_present_temp_surf.csv",
+present_temp_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_present_temp_surf.csv",
                                  col_names=F)
-future_temp_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_future_temp_surf.csv",
+future_temp_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_future_temp_surf.csv",
                                 col_names=F)
 #CO2 
-present_CO2_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_present_pCO2_surf.csv",
+present_CO2_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_present_pCO2_surf.csv",
                                  col_names=F)
-future_CO2_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_future_pCO2_surf.csv",
+future_CO2_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_future_pCO2_surf.csv",
                                 col_names=F)
-present_CO2_bot_12km<-read_csv("raw_data/downscaled_climate_data/12km_present_pCO2_bot.csv",
+present_CO2_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_present_pCO2_bot.csv",
                                 col_names=F)
-future_CO2_bot_12km<-read_csv("raw_data/downscaled_climate_data/12km_future_pCO2_bot.csv",
+future_CO2_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_future_pCO2_bot.csv",
                                col_names=F)
 
 #oxy
-present_oxy_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_present_oxy_surf.csv",
+present_oxy_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_present_oxy_surf.csv",
                                 col_names=F)
-future_oxy_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_future_oxy_surf.csv",
+future_oxy_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_future_oxy_surf.csv",
                                col_names=F)
-present_oxy_bot_12km<-read_csv("raw_data/downscaled_climate_data/12km_present_oxy_bot.csv",
+present_oxy_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_present_oxy_bot.csv",
                                col_names=F)
-future_oxy_bot_12km<-read_csv("raw_data/downscaled_climate_data/12km_future_oxy_bot.csv",
+future_oxy_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_future_oxy_bot.csv",
                               col_names=F)
 #pH
 present_pH_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_present_pH_surf.csv",

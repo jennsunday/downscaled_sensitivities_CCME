@@ -14,7 +14,6 @@ library(RColorBrewer)
 #reusing some vector names from 2km model, so be sure to clear environment first
 
 #read in data from 12km models, titled "big"
-setwd("/Users/Jennifer_Sunday/Dropbox/UW_Schmidt/data/")
 oxyrel_greater_than_10percent<-read_csv("processed_data/oxyrel_greater_than_10percent_big.csv")
 CO2rel_greater_than_10percent<-read_csv("processed_data/CO2rel_greater_than_10percent_big.csv")
 temprel_greater_than_10percent<-read_csv("processed_data/temprel_greater_than_10percent_big.csv")
