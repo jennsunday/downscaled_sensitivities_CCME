@@ -4,7 +4,7 @@ library(tidyverse)
 
 #### Step 2: read in the data
 data<-read_csv(file="raw_data/direct_responses_data_jan2.csv")
-
+name_replace_order<-read_csv("raw_data/name_replace_order.csv")
 
 #make a unique identifier for each author, pub_year, and response_variable combination
 data$study<-as.factor(paste(data$Author, data$Pub_Year, data$English_Name, 
@@ -67,6 +67,9 @@ data<-data %>%
                              TRUE ~ -99))
 
 filter(data,treat_value==(-99))
+
+#get species order and correct common name into the dataframe
+data<-left_join(data, name_replace_order, by = "English_Name")
 
 write.csv(data, "processed_data/201230_Schmidt_biotic_responses_data.csv")
 

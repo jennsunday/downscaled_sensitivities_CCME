@@ -19,6 +19,7 @@ data_in_window<-read_csv("processed_data/data_in_window.csv")
 anova_data<-data_in_window %>%
   filter(study_design %in% c("anova", "multi-level anova")) 
 
+names(data_in_window)
 
 #expand anova df by sample size of each row
 anova_data_expanded<- anova_data[rep(seq.int(1,nrow(anova_data)), anova_data$sample_size),]
@@ -30,7 +31,8 @@ for(i in 1:10){ #change back to 5000 eventually
     mutate(simulated_response=rnorm(rel_response, 
                                    mean=rel_response, 
                                    sd=SE_response_for_resampling)) %>% #add a column with a simulated sample for each row
-    group_by(Author, Pub_Year, English_Name, Life_stage, 
+    group_by(Author, Pub_Year, English_Name, Life_stage, Life_stage_category,
+             common_name, species_order,
              Response_variable, response_type, unique_study, treatment_var, rate_or_biomass, response_type_2) %>% #group data to study level and keep info
     do(tidy(lm(simulated_response~treat_value, data=.))) %>%
     mutate(replicate=i) %>%
@@ -42,7 +44,8 @@ for(i in 1:10){ #change back to 5000 eventually
 
 #get a summary of simulated lm's from anova data
 lm_by_group_summary<-lm_anova_resampled %>%
-  group_by(Author, Pub_Year, English_Name, Life_stage, 
+  group_by(Author, Pub_Year, English_Name, Life_stage, Life_stage_category,
+           common_name, species_order,
            Response_variable, response_type, unique_study, treatment_var, rate_or_biomass, response_type_2, term) %>%
   mutate(mean_estimate= mean(estimate), se_estimate = sd(estimate)) %>% #take means across reps
   filter(replicate=="1") #subset to the first rep
@@ -52,13 +55,15 @@ regresion_data<-data_in_window %>%
   filter(study_design %in% c("regression")) 
 
 lm_by_group_summary_regress<-regresion_data %>%
-  group_by(Author, Pub_Year, English_Name, Life_stage, Response_variable, response_type, unique_study, 
+  group_by(Author, Pub_Year, English_Name, Life_stage, Life_stage_category, Response_variable, response_type, unique_study, 
+           common_name, species_order, 
            treatment_var, rate_or_biomass, response_type_2) %>%
   do(tidy(lm(rel_response~treat_value, data=.))) %>%
   ungroup() %>%
-  group_by(Author, Pub_Year, English_Name, Life_stage, Response_variable, response_type, unique_study, 
+  group_by(Author, Pub_Year, English_Name, Life_stage, Life_stage_category, Response_variable, response_type, unique_study, 
            treatment_var, rate_or_biomass, response_type_2, term) %>%
   mutate(mean_estimate = estimate, se_estimate = std.error)
+
 
 #bind anova-style model fit summaries with regression-style:
 sensitivity_by_study<-rbind(lm_by_group_summary_regress, lm_by_group_summary)
@@ -66,7 +71,45 @@ write_csv(sensitivity_by_study, "processed_data/sensitivity_by_study.csv")
 
 
 
+###############
+#use relavant model zone standardize deltas expected for each species/life history
+###############
+#assign model zone to species
+#all adults can be considered benthic except for pink salmon = mesopelagic
+#propagules are sometimes benthic sometimes not, assign based on specific life stage used
+sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study.csv") %>%
+  filter(term=="treat_value")
 
+unique(sensitivity_by_study$Life_stage)
+sensitivity_by_study<-sensitivity_by_study %>%
+  mutate(modelzone=case_when(Life_stage %in% c("larvae", "megalopa", "Larvae", "Brachiolaria larva", "embryo") ~ "surface",
+                             English_Name =="Pink Salmon" ~ "200m",  #all others are benthic 
+                             TRUE ~ "bottom"))
+
+#get mean projected change for each zone and model
+#note, sality is missing at this point
+environmental_mean_deltas<-read_csv("processed_data/table_delta_masked.csv") %>%
+  mutate(modelzone=water_range) %>%
+  mutate(variable=ifelse(variable=="temp", "temperature", variable)) 
+
+
+#left_join so that each model and zone delta is joined by a sensitivity on the left
+by_zone_response_estimates<-left_join(sensitivity_by_study, environmental_mean_deltas, 
+                                         by = c("treatment_var" = "variable", "modelzone" = "modelzone")) %>%
+  filter(treatment_var != "salinity",
+         model=="2km")
+
+sensitivity_by_study_zoned<-by_zone_response_estimates %>%
+  mutate(percentchange=mean_estimate*mean_delta*100) %>% #calculate meta-analyzed sensitivity
+  mutate(percentchange_lo_95=(mean_estimate-1.96*se_estimate)*mean_delta*100) %>% #calculate low 95CI
+  mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*mean_delta*100) %>% #calculate high 95CI
+  mutate(percentchangeSE=abs(se_estimate)*mean_delta*100)
+
+write_csv(sensitivity_by_study_zoned, "processed_data/sensitivity_by_study_zoned.csv")
+
+sensitivity_by_study$modelzone
+########################################
+#follow script can be removed
 ########################################
 #convert slope to response using mean deltas from downscaled model
 #read in data
@@ -81,7 +124,6 @@ deltas_used<-table_delta_masked %>%
 
 #convert slopes to sensitivity by normalizing variation to the range expected
 
-
 sensitivity_by_study$change_in_2100<-case_when(
   sensitivity_by_study$treatment_var=="CO2" ~ 
     filter(deltas_used, variable=="CO2")$mean_delta,
@@ -95,19 +137,13 @@ sensitivity_by_study$change_in_2100<-case_when(
     -3,
   TRUE ~ -99)
 
-#sensitivity_by_study$change_in_2100<-case_when(sensitivity_by_study$treatment_var=="CO2" ~ 726,
-                          #sensitivity_by_study$treatment_var=="temperature" ~ 2.32,
-                          #sensitivity_by_study$treatment_var=="oxygen" ~ -0.58,
-                          #sensitivity_by_study$treatment_var=="salinity" ~ -3,
-                          #TRUE ~ -99)
 
 sensitivity_by_study<-sensitivity_by_study %>%
   mutate(percentchange=mean_estimate*change_in_2100*100) %>% #calculate sensitivity as percentage
   mutate(SEpercentchange=se_estimate*change_in_2100*100) #calculate SE of sensitivity
-
 write_csv(sensitivity_by_study, "processed_data/sensitivity_by_study_cal.csv")
 
-
+sensitivity_by_study$mean_estimate
 ##################################
 #quick plot
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_cal.csv")
