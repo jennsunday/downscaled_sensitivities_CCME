@@ -75,6 +75,7 @@ sensitivity_by_response_type %>%
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank())+
   geom_label(data=label_species, inherit.aes = F, aes(x=x_position, y=mean_order, label=common_name))
+ggsave("figures/species_sensitivity_by_response.png", height=6, width=4)
 
 
 #by sign
@@ -115,5 +116,5 @@ sensitivity_by_pos_neg %>%
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank()) +
   geom_label(data=label_species, inherit.aes = F, aes(x=x_position, y=mean_order, label=common_name))
-
+ggsave("figures/species_sensitivity_by_pos_neg.png", height=6, width=4)
 

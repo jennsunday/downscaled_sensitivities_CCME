@@ -33,13 +33,13 @@ present_oxy_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_presen
 future_oxy_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_future_oxy_bot.csv",
                               col_names=F)
 #pH
-present_pH_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_present_pH_surf.csv",
+present_pH_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_present_pH_surf.csv",
                                 col_names=F)
-future_pH_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_future_pH_surf.csv",
+future_pH_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_future_pH_surf.csv",
                                col_names=F)
 present_pH_bot_12km<-read_csv("raw_data/downscaled_climate_data/12km_present_pH_bot.csv",
                                col_names=F)
-future_pH_bot_12km<-read_csv("raw_data/downscaled_climate_data/12km_future_pH_bot.csv",
+future_pH_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_future_pH_bot.csv",
                               col_names=F)
 
 #apply the mask to each

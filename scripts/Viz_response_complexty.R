@@ -58,7 +58,8 @@ sensitivity_by_study %>%
   scale_x_discrete(labels=responses_in_order) +
   xlab("response type in order of increasing complexity") +
   ylab("percent change in response") +
-  labs(shape="treatment variable", fill="life stage", col="life stage")
+  labs(shape="treatment variable", fill="life stage", col="life stage")+ 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ggsave("figures/ccomplexity_order.png", height=5, width=5)
 
 

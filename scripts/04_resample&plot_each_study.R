@@ -107,7 +107,7 @@ sensitivity_by_study_zoned<-by_zone_response_estimates %>%
 
 write_csv(sensitivity_by_study_zoned, "processed_data/sensitivity_by_study_zoned.csv")
 
-sensitivity_by_study$modelzone
+
 ########################################
 #follow script can be removed
 ########################################
