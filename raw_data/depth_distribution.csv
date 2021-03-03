@@ -1,11 +1,11 @@
-﻿English_Name,genus,species,lower_depth,upper_depth,source
-Dungeness crab,Cancer,magister,360,0,sealifebase
-Ochre star,Pisaster,ochraceus,90,0,sealifebase
-Red urchin,Strongylocentrotus,franciscanus,125,0,sealifebase
-Razor Clam,Siliqua,patula,55,0,sealifebase
-Pink Salmon,Oncorhynchus,gorbuscha,250,0,fishbase
-Canopy-forming Kelp,Nereocystis_Laminaria_Macrocystis,luetkeana_pyrifera_sacchirina,30,0,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/
-blue & black rockfish,Sebastes,mystinus,550,0,fishbase
-copper & quillback rockfish,Sebastes,"melanops, caurinus",366,0,fishbase
-seagrass,Zostera,marina,10,0,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/
-sablefish,Anoplopoma,fimbria,2740,175,fishbase
+﻿common_name,genus,species,lower_depth,upper_depth,source,adult_zone
+Dungeness crab,Cancer,magister,360,0,sealifebase,benthic
+ochre star,Pisaster,ochraceus,90,0,sealifebase,benthic
+red urchin,Strongylocentrotus,franciscanus,125,0,sealifebase,benthic
+razor clam,Siliqua,patula,55,0,sealifebase,benthic
+pink salmon,Oncorhynchus,gorbuscha,250,0,fishbase,pelagic
+canopy-forming kelp,Nereocystis_Laminaria_Macrocystis,luetkeana_pyrifera_sacchirina,30,0,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/,benthic
+blue & black rockfish,Sebastes,mystinus,550,0,fishbase,benthic
+copper & quillback rockfish,Sebastes,"melanops, caurinus",366,0,fishbase,benthic
+seagrass,Zostera,marina,10,0,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/,benthic
+sablefish,Anoplopoma,fimbria,2740,175,fishbase,benthic

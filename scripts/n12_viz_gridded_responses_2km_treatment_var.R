@@ -22,7 +22,7 @@ sensitivity_by_study<-sensitivity_by_study %>%
                                 modelzone=="surface" ~ "surf",
                                 modelzone=="200m" ~ "200m",
                                 TRUE ~ "999")) %>%
-  mutate (treatment_var2 = ifelse(treatment_var %in% c("pH", "CO2"), "CO2", treatment_var))
+  mutate (treatment_var2 = ifelse(treatment_var %in% c("pH", "CO2"), "pH & CO2", treatment_var))
 unique(all_deltas_2km$treatment_var)
 
 all_deltas_2km<-all_deltas_2km %>%

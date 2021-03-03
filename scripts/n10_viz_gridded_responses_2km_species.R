@@ -1,4 +1,4 @@
-#goal subset to species present at the depth of that grid cell <- must await Darren's depth layer
+#goal subset to species present at the depth of that grid cell 
 #calculate every response in every grid cell
 #take weighted means at various levels, especially weighted mean of negative responses and of positive responses
 
@@ -12,10 +12,22 @@ library(biscale)
 library(cowplot)
 
 all_deltas_2km<-read_csv("processed_data/all_deltas_2km.csv") 
-
+depth_2km<-read_csv("processed_data/depth_2km.csv")
+depth_range<-read_csv("raw_data/depth_distribution.csv")
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_zoned.csv")
 
+#set seagrass to lower_depth of 30m instead of 10m to see more coverage
+depth_range<-depth_range %>%
+  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth))
 
+#left join sensitivity data to depth based on species names
+sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="common_name")
+#left join depth data to delta data for subsetting
+all_deltas_2km<-left_join(all_deltas_2km, depth_2km, by=c("lat", "long", "latlong"))
+
+
+sensitivity_by_study$lower_depth
+unique(depth_range$common_name)
 #adjust the names of the zones to set up the left_join
 sensitivity_by_study<-sensitivity_by_study %>%
   mutate (modelzone = case_when(modelzone=="bottom" ~ "bot", 
@@ -30,73 +42,97 @@ all_deltas_2km<-all_deltas_2km %>%
                                 treatment_var=="pH" ~ "pH",
                                 TRUE ~ "999"))
 
+plot(filter(pos_neg_grid, pos_neg=="pos")$se_estimate~filter(pos_neg_grid, pos_neg=="pos")$mean_estimate)
 
-  #expand sensitivity data and gridded delta data
+#expand sensitivity data and gridded delta data
 #make a new percentchange and percentchangeSE for every combination of response and delta
-pos_neg_grid<-left_join(sensitivity_by_study, all_deltas_2km, by=c("treatment_var", "modelzone")) %>%
+pos_neg_grid_old<-left_join(sensitivity_by_study, all_deltas_2km, by=c("treatment_var", "modelzone")) %>%
   drop_na(latlong) %>%
-  drop_na(delta) %>%
+  drop_na(delta) %>%  
+  filter(adult_zone != "benthic" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
+  filter(upper_depth<depth) %>% #filter out instances when ocean depth is above a species' upper depth
   mutate(percentchange=mean_estimate*delta*100) %>% #calculate meta-analyzed sensitivity
   mutate(percentchange_lo_95=(mean_estimate-1.96*se_estimate)*delta*100) %>% #calculate low 95CI
-  mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*delta*100) %>% #calculate high 95CI
+  mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*delta*100) %>% #calculate high 95C
   mutate(percentchangeSE=abs(se_estimate)*delta*100) %>%
   mutate(pos_neg=ifelse(percentchange>0, "pos", "neg")) %>%
-  group_by(lat, long, pos_neg, common_name) %>%
+  group_by(lat, long, common_name) %>%
+  mutate(species_study_sum=n()) %>%
+  ungroup() %>%
+  group_by(lat, long, pos_neg, common_name, species_study_sum) %>%
   mutate(variance=percentchangeSE^2, weight=1/(variance+0.00000001)) %>%
-  dplyr::summarize(weighted_sensitivity=weighted.mean(percentchange, w=weight), 
+  dplyr::summarize(weighted_sensitivity=sum(percentchange*weight)/species_study_sum, 
                    n=n(), 
                    weight_sum=sum(weight), SE_wmean=sqrt(1/(sum(weight)))) %>%
   mutate(lo_95=weighted_sensitivity-1.96*SE_wmean, hi_95=weighted_sensitivity+1.96*SE_wmean) %>%
   ungroup()
 
-
+x<-c(3,4,4,2,3,1)
+y<-c(2,3,4,2,1,4)
+x2<-c(1,2)
+y2<-c(9,8)
+weighted.sum(x, w = y)
+sum(x*y)/8
+sum(x2*y2)/8
+weighted.mean(x, w=y)
+weighted.mean(x2, w=y2)
 #get coastline mask
 coastline_mask<-read_csv("processed_data/coastline_mask_2km.csv")
 
+#remove coastline 
 #get shelf mask and reshape shelf mask into long data
-shelf_mask_2km<-read_csv("raw_data/downscaled_climate_data/mask_500m_2km.csv", col_names=F)
-shelf_contour_2km<-melt(shelf_mask_2km) %>%
-  mutate(lat=rep(1:dim(shelf_mask_2km)[1], dim(shelf_mask_2km)[2])) %>%
-  separate(variable, c(NA, "long"), sep = "X", remove = TRUE) %>%
-  mutate(long=as.numeric(long))%>%
-  mutate(lat=as.numeric(lat))%>%
-  mutate(latlong=paste(long, lat, sep="_")) %>%
-  rename(shelf=value)
+#shelf_mask_2km<-read_csv("raw_data/downscaled_climate_data/mask_500m_2km.csv", col_names=F)
+#shelf_contour_2km<-melt(shelf_mask_2km) %>%
+#  mutate(lat=rep(1:dim(shelf_mask_2km)[1], dim(shelf_mask_2km)[2])) %>%
+#  separate(variable, c(NA, "long"), sep = "X", remove = TRUE) %>%
+#  mutate(long=as.numeric(long))%>%
+#  mutate(lat=as.numeric(lat))%>%
+#  mutate(latlong=paste(long, lat, sep="_")) %>%
+#  rename(shelf=value)
 
 
-pos_neg_grid_shelf<-left_join(pos_neg_grid, shelf_contour_2km, by=(c("lat", "long"))) %>%
-  filter(shelf!=0)
+#pos_neg_grid_shelf<-left_join(pos_neg_grid, shelf_contour_2km, by=(c("lat", "long"))) %>%
+#  filter(shelf!=0)
 
 # New facet label names for dose variable
-species.labs <- pos_neg_grid_shelf  %>%
-  group_by(common_name, latlong) %>%
+species.labs <- pos_neg_grid %>%
+  group_by(common_name, lat, long) %>%
   summarize(mean_ws=(mean(weighted_sensitivity))) %>%
   ungroup() %>%
   group_by(common_name) %>%
   summarize(order=(mean(mean_ws))) %>%
   .$common_name
 
-species_order<-pos_neg_grid_shelf %>%
-  group_by(common_name, latlong) %>%
+species_order<-pos_neg_grid %>%
+  group_by(common_name, lat, long) %>%
   summarize(mean_ws=(mean(weighted_sensitivity))) %>%
   ungroup() %>%
   group_by(common_name) %>%
   summarize(order=(mean(mean_ws))) %>%
   .$order
 
-names(species.labs) <- species_order
+#prep a data from to replace labels
+names(species.labs) <- species_order 
 
-species_order.df<-data.frame(common_name=unique(pos_neg_grid_shelf$common_name), order=species_order)
+#prep a dataframe to left_join for a new order
+species_order.df<-pos_neg_grid %>%
+  group_by(common_name, lat, long) %>%
+  summarize(mean_ws=(mean(weighted_sensitivity))) %>%
+  ungroup() %>%
+  group_by(common_name) %>%
+  summarize(order=(mean(mean_ws)))
+write_csv(species_order.df, "processed_data/species_order.csv")
 
-pos_neg_grid_shelf<-left_join(select(pos_neg_grid_shelf, -order), species_order.df)
+#replace order according to above
+pos_neg_grid<-left_join(pos_neg_grid, species_order.df, by="common_name")
 
-pos_neg_grid_shelf %>% 
+pos_neg_grid %>% 
   #filter(common_name=="razor clam") %>%
   na.omit(pos_neg) %>%
   ggplot(aes(y = lat, x = long)) + geom_tile(aes(fill = abs(weighted_sensitivity))) +
   geom_tile(data=coastline_mask, fill=grey(0.4)) +
-  facet_grid(pos_neg~order, labeller = labeller(pos_neg=c("neg"="negative","pos"="positive"),
-                                                order=species.labs)) + 
+  facet_grid(pos_neg~order, labeller=labeller(order = species.labs,
+                                              pos_neg=c("neg"="negative","pos"="positive"))) + 
   scale_fill_gradient(low="#ffeda0", high="#d7191c") +
   #scale_fill_distiller() +
   theme_classic() + theme(axis.title.x=element_blank(),
@@ -111,6 +147,4 @@ pos_neg_grid_shelf %>%
   labs (fill="percent change") +
   theme(strip.text.x = element_text(size = 6))
 ggsave("figures/pos_neg_species_beside_2km.png", height=4, width=10)
-
-
 
