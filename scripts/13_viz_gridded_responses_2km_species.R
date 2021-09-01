@@ -1,6 +1,5 @@
-#goal subset to species present at the depth of that grid cell 
-#calculate every response in every grid cell
-#take weighted means at various levels, especially weighted mean of negative responses and of positive responses
+#goal: visualize the postitive and negative cumulative effects 
+# separated by species, for the 2km model
 
 library(tidyverse)
 library(broom)

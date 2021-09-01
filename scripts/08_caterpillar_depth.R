@@ -1,6 +1,7 @@
-#goal subset to species present at the depth of that grid cell 
-#calculate every response in every grid cell
-#take weighted means at various levels, especially weighted mean of negative responses and of positive responses
+#goal: calculate a mean sensitivity from each observed response 
+# multiplied by the delta of the relevant environmental variable in each grid cell
+# only include deltas from relevant occupied depths 
+#make caterpillar plot of responses
 
 library(tidyverse)
 library(broom)
@@ -44,6 +45,7 @@ all_deltas_2km<-all_deltas_2km %>%
 #expand sensitivity data and gridded delta data
 #make a new percentchange and percentchangeSE for every combination of response and delta
 #don't include cells where depth is irrevelent for that species
+#calculate a mean sensitivity from each observed response
 study_response<-left_join(sensitivity_by_study, all_deltas_2km, by=c("treatment_var", "modelzone")) %>%
   drop_na(latlong) %>%
   drop_na(delta) %>%

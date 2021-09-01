@@ -1,5 +1,5 @@
 #goal calculate weighted mean within species and response types
-#make catepillar plot of meta-analyzed responses
+#make caterpillar plot of meta-analyzed responses
 
 library(tidyverse)
 library(broom)
@@ -15,7 +15,7 @@ all_deltas_2km<-read_csv("processed_data/all_deltas_2km.csv")
 depth_2km<-read_csv("processed_data/depth_2km.csv")
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_zoned.csv")
 depth_range<-read_csv("raw_data/depth_distribution.csv")
-species_order.df<-read_csv("processed_data/species_order.csv")
+#species_order.df<-read_csv("processed_data/species_order.csv")
 
 
 #set seagrass to lower_depth of 30m instead of 10m to see more coverage
@@ -147,13 +147,13 @@ summary_type<-meta_responses %>%
   labs(x="Percent change in biological rate", x="weighted response", 
        col = "response type", fill="response type", shape="response type")
 
+#have a look
 ggdraw() +
   draw_plot(meta_plot, 0, 0.3, 1, 0.7) +
   draw_label("b", 0.03, 0.95) +
   draw_plot(summary_type, 0, 0, 1, 0.3) +
   draw_label("c", 0.03, 0.25)
   
-#ggsave("figures/caterpillar_by_species_mata_summary.png", height=7, width=4)
 
 ###
 bigcat<-meta_responses %>%
@@ -177,8 +177,8 @@ bigcat<-meta_responses %>%
         axis.ticks.y = element_blank()) +
   geom_text(inherit.aes=F, hjust = 0, nudge_x= 3, nudge_y=-0.3,
             aes(label=common_name, x=weighted_response, y=new_order), size=2)
-#ggsave("figures/caterpillar_by_species_mata_ordered.png", height=7, width=6)
 
+#bring them together
 ggdraw() +
   draw_plot(bigcat, 0, 0, 0.55, 1) +
   draw_plot(meta_plot, 0.55, 0.3, 0.4, 0.7) +
@@ -186,4 +186,4 @@ ggdraw() +
   draw_label("a", 0.03, 0.97) +
   draw_label("b", 0.58, 0.97) +
   draw_label("c", 0.58, 0.27)
-ggsave("figures/full_response_meta_fig.png", height=6, width=9)
+ggsave("figures/full_response_meta_fig.png", height=6, width=9) #save

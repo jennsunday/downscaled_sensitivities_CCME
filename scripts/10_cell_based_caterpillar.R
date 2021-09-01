@@ -1,5 +1,7 @@
-#goal calculate weighted mean within species and response types
-#make catepillar plot of meta-analyzed responses
+#goal: for 3 illustrative grid cells in the domain, 
+#display weighted mean within species and response types 
+#for species that occupy that depth
+#in catepillar plot
 
 library(tidyverse)
 library(broom)
@@ -28,7 +30,9 @@ sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="common_na
 
 #create dataframe of three example locations
 #df<-data.frame(lat=c(191, 130, 108), long=c(95, 80, 80), text=c("a", "b", "c"), text_col=c("1", "1", "2"))
-df<-data.frame(lat=c(245, 130, 108), long=c(84, 80, 80), text=c("a", "b", "c"), text_col=c("1", "1", "2"))
+df<-data.frame(lat=c(241, 130, 107), long=c(80, 80, 80), text=c("a", "b", "c"), text_col=c("1", "1", "2"))
+
+
 
 #adjust the names of the zones to set up the left_join
 sensitivity_by_study<-sensitivity_by_study %>%
@@ -46,9 +50,9 @@ one_cell_deltas_2km<-left_join(all_deltas_2km, depth_2km, by=c("lat", "long", "l
                                     treatment_var=="CO2" ~ "CO2",
                                     treatment_var=="pH" ~ "pH",
                                     TRUE ~ "999")) %>%
-  filter(latlong %in% c("95_210", "80_130", "80_108")) #filter to example 3 latlongs
+  filter(latlong %in% c("80_241", "80_130", "80_107")) #filter to example 3 latlongs
   
-sensitivity_by_study$modelzone
+
 #expand sensitivity data and gridded delta data
 #make a new percentchange and percentchangeSE for every combination of response and delta
 meta_responses_one_cell<-left_join(sensitivity_by_study, one_cell_deltas_2km, by=c("treatment_var", "modelzone")) %>%
@@ -94,18 +98,18 @@ pos_neg_one_cell<-meta_responses_one_cell %>%
          ymax=c(rep(-1,3), rep(-3, 3)),
          ymin=c(rep(-3, 3), rep(-5, 3))) %>%
   mutate(new_order = c(1:n()),
-         cell_example=case_when(latlong=="95_210"~"a",
+         cell_example=case_when(latlong=="80_241"~"a",
                                 latlong=="80_130"~"b",
-                                latlong=="80_108"~"c"))
+                                latlong=="80_107"~"c"))
 
 
 #make plot
 indv_cells<-meta_responses_one_cell %>%
   arrange(weighted_response) %>%
   mutate(new_order = c(1:n()),
-         cell_example=case_when(latlong=="95_210"~"a",
+         cell_example=case_when(latlong=="80_241"~"a",
                                 latlong=="80_130"~"b",
-                                latlong=="80_108"~"c")) %>%
+                                latlong=="80_107"~"c")) %>%
   ggplot(aes(x=weighted_response, y=new_order, 
              shape=response_type)) +
   geom_vline(xintercept = 0, col="grey") +
@@ -150,48 +154,3 @@ for (i in strip_both) {
 ggdraw(g)
 ggsave("figures/caterpillar_meta_3_cellsb.png", height=8, width=3.5)
 
-
-###
-#old stuff###
-###
-#replace order according to above
-meta_responses_one_cell %>%
-  arrange(weighted_response) %>%
-  mutate(new_order = c(1:n()),
-         cell_example=case_when(latlong=="95_210"~"a",
-                                latlong=="80_130"~"b",
-                                latlong=="80_108"~"c")) %>%
-  ggplot(aes(x=weighted_response, y=new_order, 
-             shape=response_type, col=response_type, fill=response_type)) +
-  geom_vline(xintercept = 0, col="grey") +
-  coord_cartesian(xlim=c(-45,45)) +
-  geom_point(aes(size=1/SE_wmean)) + theme_classic() +
-  geom_path(aes(group=1)) +
-  scale_color_manual(values = pnw_palette("Bay",7)) +
-  scale_fill_manual(values = c(pnw_palette("Bay",7), pnw_palette("Bay",2))) +
-  labs(y = "Response", x="Percent change in biological rate", 
-       col = "response type", shape="response type", fill="response type") +
-  scale_shape_manual(values=c(21, 22, 23, 24, 25))+
-  geom_errorbarh(aes(xmin=lo_95, 
-                     xmax=hi_95), height=0) +
-  theme(axis.title.y = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks.y = element_blank()) +
-  # geom_text(inherit.aes=F, hjust = 0, nudge_x= 3, nudge_y=-0.3,
-  #            aes(label=common_name, x=weighted_response, y=new_order), size=2) +
-  geom_rect(data=pos_neg_one_cell, inherit.aes=F, 
-            aes(xmax=mean_response, 
-                xmin=xmin, ymin=ymin, ymax=ymax), 
-            fill=case_when(pos_neg_one_cell$mean_response<(-8) ~  "#ED9106",
-                           pos_neg_one_cell$mean_response>(-8) & pos_neg_one_cell$mean_response<(-4) ~  "#EDC939",
-                           pos_neg_one_cell$mean_response>8~"#0A7492",
-                           pos_neg_one_cell$mean_response>4 & pos_neg_one_cell$mean_response<8~"#99C9C7")) +
-  facet_wrap(~cell_example, ncol=1) 
-#scale_fill_manual(values = rev(pnw_palette("Bay",2)))
-ggsave("figures/caterpillar_meta_3_cells.png", height=10, width=4)
-
-
-
-custom_pal <- bi_pal_manual(val_1_1 = "#d9d9d9", val_1_2 = "#EDC939", val_1_3 = "#ED9106", 
-                            val_2_1 = "#99C9C7", val_2_2 = "#73AA77", val_2_3= "#B5651E",
-                            val_3_1 = "#0A7492", val_3_2 = "#055E80", val_3_3= "#19093D")

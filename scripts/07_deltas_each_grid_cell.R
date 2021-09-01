@@ -1,4 +1,6 @@
-#goal: for every grid cell, get delta of each response, 
+# goal: for every grid cell, depth zone, environmental variable, 
+# and model domain, get nodel-prejected delta of each response 
+# into long format
 
 #librarieslibrary(nlme) 
 #install.packages("PNWColors")

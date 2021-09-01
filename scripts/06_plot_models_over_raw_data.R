@@ -1,5 +1,5 @@
 #goal: plot model fits over raw data
-#this is an extension of script 04, need to have "lm_anova_resampled" object in environment
+#this is an extension of script 05, need to have "lm_anova_resampled" object in environment
 
 #do this by:
 #expand an empty df so that for each study there are n=10 rows between minimum and maximum treatment values
