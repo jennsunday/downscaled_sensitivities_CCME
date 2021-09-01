@@ -73,6 +73,16 @@ data<-left_join(data, name_replace_order, by = "English_Name")
 
 write.csv(data, "processed_data/201230_Schmidt_biotic_responses_data.csv")
 
+#assess coverage
+coverage<-data %>%
+  filter(treatment_var!="salinity") %>% #without salinity
+  group_by(English_Name, treatment_var, response_type) %>%
+  summarize(mean(response)) %>%
+  ungroup() 
+
+coverage<-coverage %>% count(English_Name) %>%
+  mutate(coverage=n/15) # 5 response types by 3 treatment types
+mean(coverage$coverage)
 
 #scripts not used
 #calculate variables within each study
