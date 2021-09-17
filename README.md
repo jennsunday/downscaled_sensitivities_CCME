@@ -1,7 +1,7 @@
 # UW_downscaled_sensitivies
 UW_downscaled_sensitivies
 
-Scripts for analysis and figures of sensitivies to downscaled projected changes in temperature, oxygen, CO2, and salinity in the California Current Marine Ecosystem.
+Scripts for analysis and figures of sensitivities to downscaled projected changes in temperature, oxygen, CO2, and salinity in the California Current Marine Ecosystem.
 
 Authors
 Jennifer Sunday
