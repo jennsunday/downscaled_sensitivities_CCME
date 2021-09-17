@@ -47,14 +47,16 @@ Scripts and purpose
 #in catepillar plot
 
 11_viz_gridded_meta_responses_2km
-#goal: visualize the postitive and negative cumulative effects for each grid cell in the 2km model
+#goal: visualize the postitive and negative cumulative effects for each grid cell in the 1.5km model
 
 12_viz_gridded_meta_responses_12km
 #goal: visualize the postitive and negative cumulative effects for each grid cell in the 12km model
 
 13_viz_gridded_responses_2km_species
-#goal: visualize the postitive and negative cumulative effects separated by species, for the 2km model
+#goal: visualize the postitive and negative cumulative effects separated by species, for the 1.5km model
 
+14_viz_gridded_responses_12km_species
+#goal: visualize the postitive and negative cumulative effects separated by species, for the 2km model
 
 
 
