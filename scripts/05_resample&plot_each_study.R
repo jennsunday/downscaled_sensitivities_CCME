@@ -96,8 +96,32 @@ environmental_mean_deltas<-read_csv("processed_data/table_delta_masked.csv") %>%
 #left_join so that each model and zone delta is joined by a sensitivity on the left
 by_zone_response_estimates<-left_join(sensitivity_by_study, environmental_mean_deltas, 
                                          by = c("treatment_var" = "variable", "modelzone" = "modelzone")) %>%
-  filter(treatment_var != "salinity",
-         model=="2km")
+  filter(model=="2km")
+
+###################################
+#plot salinity responses before dropping
+sensitivity_by_study %>%
+  filter(treatment_var=="salinity") %>%
+  group_by(English_Name) %>%
+  mutate(mean_response=mean(mean_estimate)) %>%
+  ungroup %>%
+  arrange(mean_response, mean_estimate) %>%
+  mutate(compound_order = c(1:n())) %>%
+  ungroup() %>%
+  ggplot(aes(x=mean_estimate, y=compound_order, shape=response_type, col=English_Name)) + 
+  geom_point() + 
+  geom_errorbarh(aes(xmin=mean_estimate - 1.96*se_estimate, 
+                                    xmax=mean_estimate + 1.96*se_estimate), height=0) +
+  theme_classic() +
+  geom_vline(xintercept = 0, col="grey") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  labs(x = "Slope of response to changes in salinity", 
+       col = "species", shape="response type")
+ggsave("figures/salinity_responses.png", width=6, height=5)
+###################################
+
 
 sensitivity_by_study_zoned<-by_zone_response_estimates %>%
   mutate(percentchange=mean_estimate*mean_delta*100) %>% #calculate meta-analyzed sensitivity
@@ -105,6 +129,7 @@ sensitivity_by_study_zoned<-by_zone_response_estimates %>%
   mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*mean_delta*100) %>% #calculate high 95CI
   mutate(percentchangeSE=abs(se_estimate)*mean_delta*100)
 
+View(sensitivity_by_study_zoned)
 write_csv(sensitivity_by_study_zoned, "processed_data/sensitivity_by_study_zoned.csv")
 
 

@@ -1,0 +1,28 @@
+﻿Common name,Species included,lower depth,upper depth,depth source,adult zone,propagule zone
+Direct single-stressor responses,,,,,,
+Pink Salmon,Oncorhynchus gorbuscha,250,0,fishbase,200m,NA
+blue & black rockfish,"Sebastes mystinus, Sebastes melanops",550,0,fishbase,bottom,NA
+copper & quillback rockfish,"Sebastes caurinus, Sebastes maliger",366,0,fishbase,bottom,NA
+sablefish,Anoplopoma fimbria,2740,175,fishbase,bottom,NA
+Razor Clam,Siliqua patula,55,0,sealifebase,bottom,NA
+Red urchin,Strongylocentrotus franciscanus,125,0,sealifebase,bottom,surface
+Dungeness crab,Cancer magister,360,0,sealifebase,bottom,surface
+Ochre star,Pisaster ochraceus,90,0,sealifebase,bottom,surface
+Canopy−forming Kelp,"Macrocystis pyrifera, Laminaria sacchirina, Nereocystis luetkeana",30,0,SIMoN,bottom,bottom
+seagrass,Zostera marina,10,0,SIMoN,bottom,NA
+Range projection using metabolic index,,,,,,
+northern anchovy,Engraulis mordax,,,,,
+Alaska pink shrimp,Pandalus eous,,,,,
+,,,,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/,,
+,,,,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/,,
+,,,,,,
+,,360,0,sealifebase,benthic,
+,,90,0,sealifebase,benthic,
+,,125,0,sealifebase,benthic,
+,,55,0,sealifebase,benthic,
+,,250,0,fishbase,pelagic,
+,,30,0,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/,benthic,
+,,550,0,fishbase,benthic,
+,,366,0,fishbase,benthic,
+,,10,0,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/,benthic,
+,,2740,175,fishbase,benthic,

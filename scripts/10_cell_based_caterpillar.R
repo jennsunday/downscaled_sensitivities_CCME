@@ -20,7 +20,6 @@ sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_zoned.csv")
 depth_range<-read_csv("raw_data/depth_distribution.csv")
 species_order.df<-read_csv("processed_data/species_order.csv")
 
-
 #set seagrass to lower_depth of 30m instead of 10m to see more coverage
 depth_range<-depth_range %>%
   mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth))
@@ -57,7 +56,7 @@ one_cell_deltas_2km<-left_join(all_deltas_2km, depth_2km, by=c("lat", "long", "l
 #make a new percentchange and percentchangeSE for every combination of response and delta
 meta_responses_one_cell<-left_join(sensitivity_by_study, one_cell_deltas_2km, by=c("treatment_var", "modelzone")) %>%
   drop_na(delta) %>%
-  filter(adult_zone != "benthic" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
+  filter(modelzone != "bottom" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
   filter(upper_depth<depth) %>% #filter out instances when ocean depth is above a species' upper depth
   mutate(percentchange=mean_estimate*delta*100) %>% #calculate meta-analyzed sensitivity
   mutate(percentchange_lo_95=(mean_estimate-1.96*se_estimate)*delta*100) %>% #calculate low 95CI
@@ -153,4 +152,4 @@ for (i in strip_both) {
 }
 ggdraw(g)
 ggsave("figures/caterpillar_meta_3_cellsb.png", height=8, width=3.5)
-
+ggsave("figures/caterpillar_meta_3_cellsb.pdf", height=8, width=3.5)

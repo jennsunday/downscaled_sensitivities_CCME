@@ -1,11 +1,11 @@
-﻿common_name,genus,species,lower_depth,upper_depth,source,adult_zone
-Dungeness crab,Cancer,magister,360,0,sealifebase,benthic
-ochre star,Pisaster,ochraceus,90,0,sealifebase,benthic
-red urchin,Strongylocentrotus,franciscanus,125,0,sealifebase,benthic
-razor clam,Siliqua,patula,55,0,sealifebase,benthic
-pink salmon,Oncorhynchus,gorbuscha,250,0,fishbase,pelagic
-canopy-forming kelp,Nereocystis_Laminaria_Macrocystis,luetkeana_pyrifera_sacchirina,30,0,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/,benthic
-blue & black rockfish,Sebastes,mystinus,550,0,fishbase,benthic
-copper & quillback rockfish,Sebastes,"melanops, caurinus",366,0,fishbase,benthic
-seagrass,Zostera,marina,10,0,https://sanctuarysimon.org/dbtools/species-database/id/75/nereocystis/luetkeana/bull-kelp/,benthic
-sablefish,Anoplopoma,fimbria,2740,175,fishbase,benthic
+﻿common_name,species_included,lower_depth,upper_depth,depth_source
+Pink Salmon,Oncorhynchus gorbuscha,250,0,fishbase
+blue & black rockfish,"Sebastes mystinus, Sebastes melanops",550,0,fishbase
+copper & quillback rockfish,"Sebastes caurinus, Sebastes maliger",366,0,fishbase
+sablefish,Anoplopoma fimbria,2740,175,fishbase
+Razor Clam,Siliqua patula,55,0,sealifebase
+Red urchin,Strongylocentrotus franciscanus,125,0,sealifebase
+Dungeness crab,Cancer magister,360,0,sealifebase
+Ochre star,Pisaster ochraceus,90,0,sealifebase
+Canopy−forming Kelp,"Macrocystis pyrifera, Laminaria sacchirina, Nereocystis luetkeana",30,0,SIMoN
+seagrass,Zostera marina,10,0,SIMoN

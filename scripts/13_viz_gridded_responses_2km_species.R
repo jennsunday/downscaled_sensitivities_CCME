@@ -8,7 +8,6 @@ library(reshape2)
 library(gridExtra)
 library(RColorBrewer)
 library(biscale)
-library(cowplot)
 
 all_deltas_2km<-read_csv("processed_data/all_deltas_2km.csv") 
 depth_2km<-read_csv("processed_data/depth_2km.csv")
