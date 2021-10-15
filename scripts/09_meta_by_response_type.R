@@ -20,10 +20,11 @@ depth_range<-read_csv("raw_data/depth_distribution.csv")
 
 #set seagrass to lower_depth of 30m instead of 10m to see more coverage
 depth_range<-depth_range %>%
-  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth))
+  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth)) %>%
+  rename(English_Name=common_name)
 
 #left join sensitivity data to depth based on species names
-sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="common_name")
+sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="English_Name") 
 
 
 
@@ -34,7 +35,7 @@ sensitivity_by_study<-sensitivity_by_study %>%
                                 modelzone=="200m" ~ "200m",
                                 TRUE ~ "999")) %>%
   mutate (treatment_var2 = ifelse(treatment_var %in% c("pH", "CO2"), "pH & CO2", treatment_var))
-unique(all_deltas_2km$treatment_var)
+
 
 #left join depth data to delta data for subsetting, and change variables to set up the left_join
 all_deltas_2km<-left_join(all_deltas_2km, depth_2km, by=c("lat", "long", "latlong")) %>%
@@ -50,20 +51,20 @@ all_deltas_2km<-left_join(all_deltas_2km, depth_2km, by=c("lat", "long", "latlon
 meta_responses<-left_join(sensitivity_by_study, all_deltas_2km, by=c("treatment_var", "modelzone")) %>%
   drop_na(latlong) %>%
   drop_na(delta) %>%
-  filter(adult_zone != "benthic" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
+  filter(adult_zone != "bottom" | lower_depth>depth) %>%  #filter out instances when ocean depth is beyond a species' lower depth
   filter(upper_depth<depth) %>% #filter out instances when ocean depth is above a species' upper depth
   mutate(percentchange=mean_estimate*delta*100) %>% #calculate meta-analyzed sensitivity
   mutate(percentchange_lo_95=(mean_estimate-1.96*se_estimate)*delta*100) %>% #calculate low 95CI
   mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*delta*100) %>% #calculate high 95C
   mutate(percentchangeSE=abs(se_estimate)*delta*100) %>%
   mutate(pos_neg=ifelse(percentchange>0, "pos", "neg")) %>%
-  group_by(common_name, unique_study, treatment_var, response_type, Life_stage_category) %>%
+  group_by(English_Name, unique_study, treatment_var, response_type, Life_stage_category) %>%
   summarize(mean_percentchange=mean(percentchange), #get mean mean, mean low, and mean high, across grid cells
             mean_percentchange_lo_95=mean(percentchange_lo_95),
             mean_percentchange_hi_95=mean(percentchange_hi_95)) %>%
   ungroup() %>%  #now, take a weighted mean per response type and species
   mutate(variance=((mean_percentchange_hi_95-mean_percentchange)/1.96)^2, weight=1/(variance+0.00000001)) %>%
-  group_by(common_name, response_type) %>%
+  group_by(English_Name, response_type) %>%
   dplyr::summarize(weighted_response=weighted.mean(mean_percentchange, w=weight), 
                    n=n(), weight=mean(weight), SE_wmean=sqrt(1/(sum(weight)))) %>%
   mutate(lo_95=weighted_response-1.96*SE_wmean, hi_95=weighted_response+1.96*SE_wmean) %>%
@@ -75,20 +76,20 @@ meta_responses<-left_join(sensitivity_by_study, all_deltas_2km, by=c("treatment_
 ###############
 
 meta_responses %>%
-  group_by(common_name) %>%
+  group_by(English_Name) %>%
   mutate(species_order=mean(weighted_response)) %>%
   ungroup() %>%
   arrange(species_order) %>%
   ungroup() %>%
   mutate(compound_order = as.factor(species_order)) %>%
-  group_by(common_name, compound_order) %>%
+  group_by(English_Name, compound_order) %>%
   summarise(mean_order=mean(species_order),
             max_response=max(weighted_response)) -> label_species
 
 dodge <- position_dodge(.5)
 
 meta_plot<-meta_responses %>%
-  group_by(common_name) %>%
+  group_by(English_Name) %>%
   mutate(species_order=mean(weighted_response)) %>%
   ungroup() %>%
   arrange(species_order) %>%
@@ -99,7 +100,7 @@ meta_plot<-meta_responses %>%
   geom_vline(xintercept = 0, col="grey") +
   coord_cartesian(xlim=c(-45,45)) +
   theme_classic() +
-  geom_path(aes(group=common_name), col=grey(0.8), lwd=1) +
+  geom_path(aes(group=English_Name), col=grey(0.8), lwd=1) +
   scale_shape_manual(values=c(21, 22, 23, 24, 25))+
   scale_color_manual(values = pnw_palette("Bay",7)) +
   scale_fill_manual(values = pnw_palette("Bay",7)) +
@@ -117,7 +118,7 @@ meta_plot<-meta_responses %>%
         axis.title.x = element_blank()) +
   theme(legend.position = "none") +
   geom_text(data=label_species, inherit.aes = F, hjust = 0, nudge_x= 6, nudge_y=-0.2, 
-            aes(x=max_response, y=compound_order, label=common_name), size=3) 
+            aes(x=max_response, y=compound_order, label=English_Name), size=3) 
 
 
 
@@ -176,7 +177,7 @@ bigcat<-meta_responses %>%
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank()) +
   geom_text(inherit.aes=F, hjust = 0, nudge_x= 3, nudge_y=-0.3,
-            aes(label=common_name, x=weighted_response, y=new_order), size=2)
+            aes(label=English_Name, x=weighted_response, y=new_order), size=2)
 
 #bring them together
 ggdraw() +

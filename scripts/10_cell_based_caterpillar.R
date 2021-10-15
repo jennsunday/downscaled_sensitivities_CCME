@@ -18,19 +18,18 @@ all_deltas_2km<-read_csv("processed_data/all_deltas_2km.csv")
 depth_2km<-read_csv("processed_data/depth_2km.csv")
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_zoned.csv")
 depth_range<-read_csv("raw_data/depth_distribution.csv")
-species_order.df<-read_csv("processed_data/species_order.csv")
 
 #set seagrass to lower_depth of 30m instead of 10m to see more coverage
 depth_range<-depth_range %>%
-  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth))
+  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth)) %>%
+  rename(English_Name=common_name)
 
 #left join sensitivity data to depth based on species names
-sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="common_name")
+sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="English_Name")
 
 #create dataframe of three example locations
-#df<-data.frame(lat=c(191, 130, 108), long=c(95, 80, 80), text=c("a", "b", "c"), text_col=c("1", "1", "2"))
-df<-data.frame(lat=c(241, 130, 107), long=c(80, 80, 80), text=c("a", "b", "c"), text_col=c("1", "1", "2"))
-
+#df<-data.frame(lat=c(191, 128, 108), long=c(95, 80, 80), text=c("a", "b", "c"), text_col=c("1", "1", "2"))
+df<-data.frame(lat=c(241, 128, 106), long=c(80, 80, 80), text=c("a", "b", "c"), text_col=c("1", "1", "2"))
 
 
 #adjust the names of the zones to set up the left_join
@@ -49,27 +48,27 @@ one_cell_deltas_2km<-left_join(all_deltas_2km, depth_2km, by=c("lat", "long", "l
                                     treatment_var=="CO2" ~ "CO2",
                                     treatment_var=="pH" ~ "pH",
                                     TRUE ~ "999")) %>%
-  filter(latlong %in% c("80_241", "80_130", "80_107")) #filter to example 3 latlongs
+  filter(latlong %in% c("80_241", "80_128", "80_106")) #filter to example 3 latlongs
   
 
 #expand sensitivity data and gridded delta data
 #make a new percentchange and percentchangeSE for every combination of response and delta
 meta_responses_one_cell<-left_join(sensitivity_by_study, one_cell_deltas_2km, by=c("treatment_var", "modelzone")) %>%
   drop_na(delta) %>%
-  filter(modelzone != "bottom" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
+  filter(adult_zone != "bottom" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
   filter(upper_depth<depth) %>% #filter out instances when ocean depth is above a species' upper depth
   mutate(percentchange=mean_estimate*delta*100) %>% #calculate meta-analyzed sensitivity
   mutate(percentchange_lo_95=(mean_estimate-1.96*se_estimate)*delta*100) %>% #calculate low 95CI
   mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*delta*100) %>% #calculate high 95C
   mutate(percentchangeSE=abs(se_estimate)*delta*100) %>%
   mutate(pos_neg=ifelse(percentchange>0, "pos", "neg")) %>%
-  group_by(common_name, unique_study, treatment_var, response_type, Life_stage_category, latlong) %>%
+  group_by(English_Name, unique_study, treatment_var, response_type, Life_stage_category, latlong) %>%
   summarize(mean_percentchange=mean(percentchange), #get mean mean, mean low, and mean high, across grid cells
             mean_percentchange_lo_95=mean(percentchange_lo_95),
             mean_percentchange_hi_95=mean(percentchange_hi_95)) %>%
   ungroup() %>%  #now, take a weighted mean per response type and species
   mutate(variance=((mean_percentchange_hi_95-mean_percentchange)/1.96)^2, weight=1/(variance+0.00000001)) %>%
-  group_by(common_name, response_type, latlong) %>%
+  group_by(English_Name, response_type, latlong) %>%
   dplyr::summarize(weighted_response=weighted.mean(mean_percentchange, w=weight), 
                    n=n(), SE_wmean=sqrt(1/(sum(weight)))) %>%
   mutate(lo_95=weighted_response-1.96*SE_wmean, hi_95=weighted_response+1.96*SE_wmean) %>%
@@ -98,8 +97,8 @@ pos_neg_one_cell<-meta_responses_one_cell %>%
          ymin=c(rep(-3, 3), rep(-5, 3))) %>%
   mutate(new_order = c(1:n()),
          cell_example=case_when(latlong=="80_241"~"a",
-                                latlong=="80_130"~"b",
-                                latlong=="80_107"~"c"))
+                                latlong=="80_128"~"b",
+                                latlong=="80_106"~"c"))
 
 
 #make plot
@@ -107,8 +106,8 @@ indv_cells<-meta_responses_one_cell %>%
   arrange(weighted_response) %>%
   mutate(new_order = c(1:n()),
          cell_example=case_when(latlong=="80_241"~"a",
-                                latlong=="80_130"~"b",
-                                latlong=="80_107"~"c")) %>%
+                                latlong=="80_128"~"b",
+                                latlong=="80_106"~"c")) %>%
   ggplot(aes(x=weighted_response, y=new_order, 
              shape=response_type)) +
   geom_vline(xintercept = 0, col="grey") +
@@ -127,14 +126,15 @@ indv_cells<-meta_responses_one_cell %>%
         axis.ticks.y = element_blank()) +
   theme(legend.position = "none")+
   # geom_text(inherit.aes=F, hjust = 0, nudge_x= 3, nudge_y=-0.3,
-  #            aes(label=common_name, x=weighted_response, y=new_order), size=2) +
+  #            aes(label=English_Name, x=weighted_response, y=new_order), size=2) +
   geom_rect(data=pos_neg_one_cell, inherit.aes=F, 
             aes(xmax=mean_response, 
                 xmin=xmin, ymin=ymin, ymax=ymax), 
-            fill=case_when(pos_neg_one_cell$mean_response<(-8) ~  "#ED9106",
-                           pos_neg_one_cell$mean_response>(-8) & pos_neg_one_cell$mean_response<(-4) ~  "#EDC939",
-                           pos_neg_one_cell$mean_response>8~"#0A7492",
-                           pos_neg_one_cell$mean_response>4 & pos_neg_one_cell$mean_response<8~"#99C9C7")) +
+            fill=case_when(pos_neg_one_cell$mean_response<(-7.5) ~  "#64acbe",
+                           pos_neg_one_cell$mean_response>(-7.5) & pos_neg_one_cell$mean_response<(-4.7) ~  "#b0d5df",
+                           pos_neg_one_cell$mean_response>7.5~"#c85a5a",
+                           pos_neg_one_cell$mean_response<4.7 & pos_neg_one_cell$mean_response>(-4.7)~"#e8e8e8",
+                           pos_neg_one_cell$mean_response>4.7 & pos_neg_one_cell$mean_response<7.5~"#e4acac")) +
   facet_wrap(~cell_example, ncol=1) +
   theme(strip.text = element_text(colour = 'white', size=16))
 #scale_fill_manual(values = rev(pnw_palette("Bay",2)))
@@ -143,7 +143,7 @@ indv_cells<-meta_responses_one_cell %>%
 #adjust colour of facet labels
 g <- ggplot_gtable(ggplot_build(indv_cells))
 strip_both <- which(grepl('strip-', g$layout$name))
-fills <- c("#73AA77","#055E80","#19093D")
+fills <- c("#ad9ea5","#627f8c", "#574249")
 k <- 1
 for (i in strip_both) {
   j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))

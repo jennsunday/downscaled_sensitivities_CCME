@@ -17,10 +17,12 @@ depth_range<-read_csv("raw_data/depth_distribution.csv")
 
 #set seagrass to lower_depth of 30m instead of 10m to see more coverage
 depth_range<-depth_range %>%
-  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth))
+  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth)) %>%
+  rename(English_Name=common_name)
+
 
 #left join sensitivity data to depth based on species names
-sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="common_name")
+sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="English_Name")
 
 
 #adjust the names of the zones to set up the left_join
@@ -43,14 +45,14 @@ all_cells_deltas_12km<-left_join(all_deltas_12km, depth_12km, by=c("lat", "long"
 pos_neg_grid12<-left_join(sensitivity_by_study, all_cells_deltas_12km, by=c("treatment_var", "modelzone")) %>%
   drop_na(latlong) %>%
   drop_na(delta) %>%
-  filter(adult_zone != "benthic" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
+  filter(adult_zone != "bottom" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
   filter(upper_depth<depth) %>% #filter out instances when ocean depth is above a species' upper depth
   mutate(percentchange=mean_estimate*delta*100) %>% #calculate meta-analyzed sensitivity
   mutate(percentchange_lo_95=(mean_estimate-1.96*se_estimate)*delta*100) %>% #calculate low 95CI
   mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*delta*100) %>% #calculate high 95C
   mutate(percentchangeSE=abs(se_estimate)*delta*100) %>% #now, take a weighted mean per response type and species
   mutate(variance=((percentchange_hi_95-percentchange)/1.96)^2, weight=1/(variance+0.00000001)) %>%
-  group_by(common_name, response_type, lat, long) %>%
+  group_by(English_Name, response_type, lat, long) %>%
   dplyr::summarize(weighted_response=weighted.mean(percentchange, w=weight), 
                    n=n(), SE_wmean=sqrt(1/(sum(weight)))) %>%
   mutate(lo_95=weighted_response-1.96*SE_wmean, hi_95=weighted_response+1.96*SE_wmean) %>%
@@ -63,7 +65,7 @@ pos_neg_grid12<-left_join(sensitivity_by_study, all_cells_deltas_12km, by=c("tre
 coastline_mask12<-read_csv("processed_data/coastline_mask_12km.csv")
 
 #get shelf mask and reshape shelf mask into long data
-shelf_mask_12km<-read_csv("raw_data/downscaled_climate_data/mask_500m_12km.csv", col_names=F)
+shelf_mask_12km<-read_csv("raw_data/new_downscaled_climate_data/mask_500m_12km.csv", col_names=F)
 shelf_contour_12km<-melt(shelf_mask_12km) %>%
   mutate(lat=rep(1:dim(shelf_mask_12km)[1], dim(shelf_mask_12km)[2])) %>%
   separate(variable, c(NA, "long"), sep = "X", remove = TRUE) %>%
@@ -107,14 +109,15 @@ pos_neg_spread_12<-pos_neg_grid_shelf12 %>%
   mutate(neg=abs(neg))
 
 # create classes
-#data <- bi_class(pos_neg_spread, x = pos, y = neg, style = "equal", dim = 3)
+#data_12 <- bi_class(pos_neg_spread_12, y = pos, x = neg, style = "equal", dim = 3, keep_factors=T)
 
 
-#define thresholds for 3 classes
+#define thresholds for 3 classes, based roughly on interquartiles but fixed for pos and neg differences
 uppercut_neg<-8
 lowercut_neg<-4
 uppercut_pos<-8
 lowercut_pos<-4
+
 
 #codify classes so they will work with bi_class
 data_12<- pos_neg_spread_12 %>%
@@ -132,17 +135,21 @@ custom_pal <- bi_pal_manual(val_1_1 = "#d9d9d9", val_1_2 = "#EDC939", val_1_3 = 
                             val_2_1 = "#99C9C7", val_2_2 = "#73AA77", val_2_3= "#B5651E",
                             val_3_1 = "#0A7492", val_3_2 = "#055E80", val_3_3= "#19093D")
 
-#custom_pal_alt <- bi_pal_manual(val_1_1 = "#d9d9d9", val_1_2 = "#AADC32", val_1_3 = "#5DC863", 
-                              #val_2_1 = "#27AD81", val_2_2 = "#21908C", val_2_3= "#2C728E",
-                              #val_3_1 = "#3B528B", val_3_2 = "#472D7B", val_3_3= "#440154")
+custom_pal_alt_1 <- bi_pal_manual(val_3_1 = "#64acbe",  val_3_2= "#627f8c", val_3_3= "#574249", 
+                                val_2_1 = "#b0d5df", val_2_2 = "#ad9ea5", val_2_3 = "#985356",
+                                val_1_1 = "#e8e8e8", val_1_2 = "#e4acac", val_1_3 = "#c85a5a")
 
+custom_pal_alt <- bi_pal_manual(val_1_3 = "#64acbe",  val_2_3= "#627f8c", val_3_3= "#574249", 
+                                val_1_2 = "#b0d5df", val_2_2 = "#ad9ea5", val_3_2 = "#985356",
+                                val_1_1 = "#e8e8e8", val_2_1 = "#e4acac", val_3_1 = "#c85a5a")
 data_12 %>%
   ggplot(aes(y = lat, x = long)) + 
   geom_tile(aes(fill = bi_class), show.legend = FALSE) +
-  bi_scale_fill(pal = custom_pal, dim = 3) +
+  bi_scale_fill(pal = custom_pal_alt, dim = 3) +
   geom_tile(data=coastline_mask12, aes(y = lat, x = long), fill=grey(0.7)) +
   bi_theme() +
   coord_cartesian(xlim=c(250,300), ylim=c(80, 380)) +
+  theme(legend.position = "none") +
   theme(axis.title=element_blank())
 
 

@@ -25,8 +25,8 @@ oxy_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_200m.c
 oxy_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_bot.csv", col_names=F)
 oxy_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_surf.csv", col_names=F)
 pH_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_200m.csv", col_names=F)
-pH_bot_2km<-read_csv("raw_data/downscaled_climate_data/2km_delta_pH_bot.csv", col_names=F)
-pH_surf_2km<-read_csv("raw_data/downscaled_climate_data/2km_delta_pH_surf.csv", col_names=F)
+pH_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_bot.csv", col_names=F)
+pH_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_surf.csv", col_names=F)
 
 
 #read in Sam's delta values 12km
@@ -40,8 +40,8 @@ oxy_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_200m
 oxy_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_bot.csv", col_names=F)
 oxy_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_surf.csv", col_names=F)
 pH_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pH_200m.csv", col_names=F)
-pH_bot_12km<-read_csv("raw_data/downscaled_climate_data/12km_delta_pH_bot.csv", col_names=F)
-pH_surf_12km<-read_csv("raw_data/downscaled_climate_data/12km_delta_pH_surf.csv", col_names=F)
+pH_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pH_bot.csv", col_names=F)
+pH_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pH_surf.csv", col_names=F)
 
 
 #apply the mask to each
