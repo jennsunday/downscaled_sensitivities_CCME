@@ -21,7 +21,8 @@ sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_zoned.csv")
 depth_range<-depth_range %>%
   mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth)) %>%
   rename(English_Name=common_name)
-
+depth_range$English_Name[9]<-unique(sensitivity_by_study$English_Name)[7] #correct cryptic matching issue on kelp name
+match(unique(depth_range$English_Name),unique(sensitivity_by_study$English_Name))#check cryptic matching issue on kelp name
 
 #left join sensitivity data to depth based on species names 
 sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="English_Name")
@@ -43,15 +44,16 @@ all_deltas_2km<-all_deltas_2km %>%
                                 treatment_var=="CO2" ~ "CO2",
                                 treatment_var=="pH" ~ "pH",
                                 TRUE ~ "999"))
-sensitivity_by_study$adult_zone
+
 #expand sensitivity data and gridded delta data
 #make a new percentchange and percentchangeSE for every combination of response and delta
 #don't include cells where depth is irrevelent for that species
 #calculate a mean sensitivity from each observed response
+
 study_response<-left_join(sensitivity_by_study, all_deltas_2km, by=c("treatment_var", "modelzone")) %>%
   drop_na(latlong) %>%
   drop_na(delta) %>%
-  filter(adult_zone != "bottom" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
+  filter(modelzone != "bottom" | lower_depth>depth) %>% #filter out instances when ocean depth is beyond a species' lower depth
   filter(upper_depth<depth) %>% #filter out instances when ocean depth is above a species' upper depth
   mutate(percentchange=mean_estimate*delta*100) %>% #calculate meta-analyzed sensitivity
   mutate(percentchange_lo_95=(mean_estimate-1.96*se_estimate)*delta*100) %>% #calculate low 95CI
@@ -64,7 +66,7 @@ study_response<-left_join(sensitivity_by_study, all_deltas_2km, by=c("treatment_
             mean_percentchange_hi_95=mean(percentchange_hi_95)) %>%
   ungroup()
   
-
+unique(study_response$English_Name)
 
 ###############
 #plot data
@@ -78,6 +80,7 @@ label_species<- study_response %>%
   ungroup %>%
   arrange(mean_change, mean_percentchange) %>%
   mutate(compound_order = c(1:n())) %>%
+  mutate(compound_order = compound_order + 2 * as.numeric(as.factor(mean_change))) %>%
   ungroup() %>%
   group_by(English_Name) %>%
   summarize(mean_order=mean(compound_order), 
@@ -87,32 +90,47 @@ label_species<- study_response %>%
   mutate(x_position=ifelse(mean_response>(3), -40, 55)) %>%
   mutate(x_position=ifelse(English_Name %in% c("blue & black rockfish", "copper & quillback rockfish"),
                            70, x_position))
-  
+
+
+#make pH and CO2 one variable and reorder treatments for plotting
+library(forcats)
+study_response$treatment_var2<-as.factor(study_response$treatment_var)
+levels(study_response$treatment_var2) <- c("CO2_pH", "oxygen", "CO2_pH","temperature")
+study_response<-study_response %>%
+  mutate(treatment_var2_order = ifelse(treatment_var2=="CO2_pH", 3,
+                                       ifelse(treatment_var2=="oxygen", 2,
+                                              ifelse(treatment_var2=="temperature", 1, NA)))) %>%
+  mutate(treatment_var3 = fct_reorder(treatment_var2, treatment_var2_order))
+
+
+#plot
 study_response %>%
   group_by(English_Name) %>%
   mutate(mean_change=mean(mean_percentchange)) %>%
   ungroup %>%
-  arrange(mean_change, mean_percentchange) %>%
+  arrange(mean_change, treatment_var3, mean_percentchange) %>%
   mutate(compound_order = c(1:n())) %>%
+  mutate(compound_order = compound_order + 2 * as.numeric(as.factor(mean_change))) %>%
   ungroup() %>%
-  mutate(treatment_var2=ifelse(treatment_var %in% c("CO2", "pH"), "CO2 & pH", treatment_var)) %>%
-  ggplot(aes(x=mean_percentchange, y=compound_order, shape=response_type, col=treatment_var2, 
-             fill=interaction(treatment_var2, Life_stage_category))) +
+  ggplot(aes(x=mean_percentchange, y=compound_order, shape=response_type, col=treatment_var3, 
+             fill=interaction(treatment_var3, Life_stage_category))) +
   geom_vline(xintercept = 0, col="grey") +
   coord_cartesian(xlim=c(-75,180)) +
   geom_point(size=2) + theme_classic() +
   scale_shape_manual(values=c(21, 22, 23, 24, 25))+
-  geom_path(aes(group=English_Name)) +
-  scale_color_manual(values = c("#2c7bb6","#fdae61", "#d7191c")) +
-  scale_fill_manual(values = c("#2c7bb6", "#fdae61", "#d7191c","#ffffff", "#ffffff", "#ffffff", "#ffffff")) +
+  #geom_path(aes(group=(English_Name))) +
+  scale_color_manual(values = c("#d7191c","#fdae61", "#2c7bb6")) +
+  scale_fill_manual(values = c("#d7191c","#fdae61", "#2c7bb6","#ffffff", "#ffffff", "#ffffff", "#ffffff")) +
   labs(y = "Response", x="Percent change in biological rate", 
        col = "treatment", shape="response type") +
-  geom_errorbarh(aes(xmin=mean_percentchange, 
-                     xmax=mean_percentchange), height=0) +
+  geom_errorbarh(aes(xmin=mean_percentchange_lo_95, 
+                     xmax=mean_percentchange_hi_95), height=0) +
   theme(axis.title.y = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank()) +
-  geom_label(data=label_species, inherit.aes = F, aes(x=80, y=mean_order, label=English_Name))
+  geom_label(data=label_species, inherit.aes = F, aes(x=80, y=mean_order, label=English_Name)) +
+  geom_rect(inherit.aes=F, aes(xmax=mean_percentchange, 
+                xmin=0, ymin=compound_order-0.25, ymax=compound_order+0.25), fill="grey")
 ggsave("figures/caterpillar_by_species.pdf", height=8, width=8)
 
 #####add species for which sensitivities were estimated from Metabolic Index
