@@ -14,9 +14,9 @@ depth_2km<-read_csv("processed_data/depth_2km.csv")
 depth_range<-read_csv("raw_data/depth_distribution.csv")
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_zoned.csv")
 
-#set seagrass to lower_depth of 30m instead of 10m to see more coverage
+#correct an error
 depth_range<-depth_range %>%
-  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth)) %>%
+  mutate(common_name=ifelse(common_name=="Canopy−forming Kelp", "Canopy-forming Kelp", common_name)) %>% #fix a very cryptic difference in dashes
   rename(English_Name=common_name)
 
 #left join sensitivity data to depth based on species names
@@ -115,11 +115,12 @@ pos_neg_grid_species<-left_join(pos_neg_grid_species, species_order.df, by="Engl
 pos_neg_grid_species %>% 
   #filter(English_Name=="razor clam") %>%
   na.omit(pos_neg) %>%
-  ggplot(aes(y = lat, x = long)) + geom_tile(aes(fill = abs(mean_response))) +
+  ggplot(aes(y = lat, x = long)) + geom_tile(aes(fill = (mean_response))) +
   geom_tile(data=coastline_mask2, fill=grey(0.4)) +
   facet_grid(pos_neg~order, labeller=labeller(order = species.labs,
                                               pos_neg=c("neg"="negative","pos"="positive"))) + 
-  scale_fill_gradient(low="#ffeda0", high="#d7191c") +
+  #scale_fill_gradient(low="#ffeda0", high="#d7191c") +
+  scale_fill_gradient2(low = "darkred", mid = grey(0.9), high ="darkblue") +
   #scale_fill_distiller() +
   theme_classic() + theme(axis.title.x=element_blank(),
                           axis.text.x=element_blank(),

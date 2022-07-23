@@ -68,6 +68,9 @@ data<-data %>%
 
 filter(data,treat_value==(-99))
 
+#remove the one non-canopy-forming kelp
+data<-data %>%
+  filter(Genus!="Laminaria")
 #get species order and correct common name into the dataframe
 #data<-left_join(data, name_replace_order, by = "English_Name")
 

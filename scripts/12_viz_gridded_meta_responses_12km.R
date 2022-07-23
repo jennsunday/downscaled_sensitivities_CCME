@@ -17,7 +17,7 @@ depth_range<-read_csv("raw_data/depth_distribution.csv")
 
 #set seagrass to lower_depth of 30m instead of 10m to see more coverage
 depth_range<-depth_range %>%
-  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth)) %>%
+  mutate(common_name=ifelse(common_name=="Canopy−forming Kelp", "Canopy-forming Kelp", common_name)) %>% #fix a very cryptic difference in dashes
   rename(English_Name=common_name)
 
 
@@ -81,11 +81,15 @@ pos_neg_grid_shelf12<-left_join(pos_neg_grid12, shelf_contour_12km, by=(c("lat",
 
 pos_neg_grid_shelf12 %>% 
   na.omit(pos_neg) %>%
-  ggplot(aes(y = lat, x = long)) + geom_tile(aes(fill = abs(mean_response))) +
-  geom_tile(data=coastline_mask12, fill=grey(0.4)) +
+  ggplot(aes(y = lat, x = long)) + geom_tile(aes(fill = (mean_response))) +
+  #geom_tile(data=coastline_mask12, fill=grey(0.4)) +
+  #geom_tile(data=coastline_mask12, alpha = 0.0, color = "black", size = 1, linejoin = "round") +
+  geom_tile(data=coastline_mask12, alpha = 1, fill="grey") +
   facet_wrap(~pos_neg, labeller = labeller(pos_neg=c("neg"="negative","pos"="positive"))) + 
   #scale_fill_gradient(low="yellow", high="blue") +
-  scale_fill_gradient(low="#f2f0f7", high="#54278f") +
+  scale_fill_gradient2(low = "darkred", mid = grey(0.9), high ="darkblue") +
+  #scale_fill_gradient2()+
+  #scale_fill_gradient(low="#f2f0f7", high="red") +
   theme_classic() + theme(axis.title.x=element_blank(),
                           axis.text.x=element_blank(),
                           axis.ticks.x=element_blank(),
@@ -97,7 +101,7 @@ pos_neg_grid_shelf12 %>%
                           strip.background=element_blank()) +
   labs (fill="percent change") +
   theme(strip.text.x = element_text(size = 12))
-ggsave("figures/pos_neg_beside_12km.png")
+ggsave("figures/pos_neg_beside_12km.pdf", width=5, height=10)
 
 #biscale
 
@@ -107,14 +111,21 @@ pos_neg_spread_12<-pos_neg_grid_shelf12 %>%
   select(lat, long, pos_neg, mean_response) %>%
   spread(pos_neg, mean_response) %>%
   mutate(neg=abs(neg))
+plot(pos_neg_spread_12$pos)
 
 # create classes
-#data_12 <- bi_class(pos_neg_spread_12, y = pos, x = neg, style = "equal", dim = 3, keep_factors=T)
-
+# create density distribution of data in order to decide on 3 categories
+pos_neg_spread_12 %>%
+  ggplot(aes(x=neg)) +
+  geom_density()
+pos_neg_spread_12 %>%
+  ggplot(aes(x=pos)) +
+  geom_density()
 
 #define thresholds for 3 classes, based roughly on interquartiles but fixed for pos and neg differences
 uppercut_neg<-8
 lowercut_neg<-4
+highcut_pos<-12
 uppercut_pos<-8
 lowercut_pos<-4
 
@@ -123,36 +134,34 @@ lowercut_pos<-4
 data_12<- pos_neg_spread_12 %>%
   mutate(bi_class_x=case_when(pos<lowercut_pos~1,
                               pos>=lowercut_pos & pos<uppercut_pos~2,
-                              pos>=uppercut_pos~3,
+                              pos>=uppercut_pos & pos<highcut_pos~3,
+                              pos>=highcut_pos~4,
                               TRUE ~ -999)) %>%
   mutate(bi_class_y=case_when(neg<lowercut_neg~1,
                               neg>=lowercut_neg & neg<uppercut_neg~2,
                               neg>=uppercut_neg~3,
                               TRUE ~ -999)) %>%
-  mutate(bi_class=paste(as.character(bi_class_x),as.character(bi_class_y), sep="-"))
+  mutate(bi_class=paste(as.character(bi_class_x),as.character(bi_class_y), sep="-"))%>%
+  mutate(bi_class_fac=as.factor(bi_class))
+# positive then negative
 
-custom_pal <- bi_pal_manual(val_1_1 = "#d9d9d9", val_1_2 = "#EDC939", val_1_3 = "#ED9106", 
-                            val_2_1 = "#99C9C7", val_2_2 = "#73AA77", val_2_3= "#B5651E",
-                            val_3_1 = "#0A7492", val_3_2 = "#055E80", val_3_3= "#19093D")
+cols <- c("1_1" = "#E8E8E8", "1-2" = "#E2B8C0", "2_1" = "#BBD1EB", "2_2" = "#B7A3B8", "2_3"= "#984962", "3_2"="#8D8CB0", "3_3"= "#80396B", "4_2"= "#624D8D", "4_3"="#630E74")
 
-custom_pal_alt_1 <- bi_pal_manual(val_3_1 = "#64acbe",  val_3_2= "#627f8c", val_3_3= "#574249", 
-                                val_2_1 = "#b0d5df", val_2_2 = "#ad9ea5", val_2_3 = "#985356",
-                                val_1_1 = "#e8e8e8", val_1_2 = "#e4acac", val_1_3 = "#c85a5a")
 
-custom_pal_alt <- bi_pal_manual(val_1_3 = "#64acbe",  val_2_3= "#627f8c", val_3_3= "#574249", 
-                                val_1_2 = "#b0d5df", val_2_2 = "#ad9ea5", val_3_2 = "#985356",
-                                val_1_1 = "#e8e8e8", val_2_1 = "#e4acac", val_3_1 = "#c85a5a")
 data_12 %>%
   ggplot(aes(y = lat, x = long)) + 
-  geom_tile(aes(fill = bi_class), show.legend = FALSE) +
-  bi_scale_fill(pal = custom_pal_alt, dim = 3) +
-  geom_tile(data=coastline_mask12, aes(y = lat, x = long), fill=grey(0.7)) +
+  geom_tile(aes(fill = bi_class)) +
+  scale_fill_manual(values=c("#E8E8E8", "#E2B8C0", "#BBD1EB", "#B7A3B8", "#984962", "#8D8CB0", "#80396B", "#624D8D", "#630E74")) +
+  #bi_scale_fill(pal = custom_pal_alt, dim = 3) +
+  #geom_tile(data=coastline_mask12, aes(y = lat, x = long), fill=grey(0.7)) +
+  geom_tile(data=coastline_mask12, alpha = 0.0, color = "black", size = 1, linejoin = "round") +
+  geom_tile(data=coastline_mask12, alpha = 1, fill=grey(0.95)) +
   bi_theme() +
   coord_cartesian(xlim=c(250,300), ylim=c(80, 380)) +
-  theme(legend.position = "none") +
+  #theme(legend.position = "none") +
   theme(axis.title=element_blank())
 
 
-ggsave("figures/pos_neg_biplot_12km.png", width=3, height=13)
-ggsave("figures/pos_neg_biplot_12km.pdf", width=3, height=13)
+ggsave("figures/pos_neg_biplot_12km.png", width=4.5, height=13)
+ggsave("figures/pos_neg_biplot_12km.pdf", width=4.5, height=13)
 

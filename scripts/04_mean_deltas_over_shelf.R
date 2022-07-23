@@ -27,7 +27,7 @@ oxy_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_surf.
 pH_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_200m.csv", col_names=F)
 pH_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_bot.csv", col_names=F)
 pH_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_surf.csv", col_names=F)
-
+View(oxy_200_2km)
 
 #read in Sam's delta values 12km
 CO2_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_200m.csv", col_names=F)
@@ -161,14 +161,38 @@ table_delta_masked<-rbind(table_results_2km, table_results_12km)
 #values are still in units of mmol/m^3.  To convert to ml/l, multiply by this:
 conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
 
+View(table_delta_masked)
 table_delta_masked<-table_delta_masked %>%
-  mutate(mean_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta),
-         sd_delta=ifelse(variable=="oxygen", sd_delta*conv_oxy, sd_delta))
+ mutate(converted_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta),
+        converted_sd=ifelse(variable=="oxygen", sd_delta*conv_oxy, sd_delta)) %>%
+  mutate(correct_delta=ifelse(water_range=="200m" & model=="2km" & variable=="oxygen", mean_delta, converted_delta),
+         correct_sd=ifelse(water_range=="200m" & model=="2km" & variable=="oxygen", sd_delta, converted_sd))
 
 write_csv(table_delta_masked, "processed_data/table_delta_masked.csv")
 
 table_delta_masked<-read_csv("processed_data/table_delta_masked.csv")
 
+table_delta_masked %>%
+  mutate(model=ifelse(model=="2km", "1.5km", model)) %>%
+  ggplot(aes(x=correct_delta, y=water_range, col=model)) +
+  facet_wrap(~variable, scales="free_x") +
+  geom_point() +
+  geom_errorbarh(aes(xmax=correct_delta+correct_sd, xmin=correct_delta-correct_sd), height=0.4) +
+  labs(x="delta", y="habitat zone") + theme_classic()
+ggsave("figures/delta_plotted.png")
+
+#test if oxy 200 2km is already converted to ml/l
+OLD_oxy_200_2km<-read_csv("raw_data/OLD2km_delta_oxy_200m.csv", col_names=F)
+OLD_oxy_200_2km[!little_shelf_mask==1] <- NA
+oxy_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_200m.csv", col_names=F)
+oxy_200_2km[!little_shelf_mask==1] <- NA
+OLDr7<-data.frame(delta=melt(OLD_oxy_200_2km, var='x_value')$value, 
+               model="2km", water_range="200m", variable="oxygen") %>%
+  mutate(delta=delta*conv_oxy)
+r7<-data.frame(delta=melt(oxy_200_2km, var='x_value')$value, 
+                  model="2km", water_range="200m", variable="oxygen") 
+
+plot(r7$delta~OLDr7$delta)
 
 table_delta_masked %>%
   mutate(model=ifelse(model=="2km", "1.5km", model)) %>%

@@ -144,7 +144,7 @@ min_oxy<-min(combined_oxy$value, na.rm=T)*conv_oxy
 #nb: did not get all present and future values for salinity and pH, so entering a reasonable range manually
 
 relevant_window<-data.frame(temperature=c(min_temp,max_temp), salinity=c(29,33.5),
-                            oxygen=c(min_oxy,max_oxy), CO2=c(min_CO2,max_CO2), pH=c(7,9), limit=c("min", "max"))
+                            oxygen=c(min_oxy,max_oxy), CO2=c(min_CO2,max_CO2), pH=c(6,10), limit=c("min", "max"))
 relevant_window<-melt(relevant_window, id="limit", variable.name = "treatment_var")
 relevant_window_cast<-dcast(relevant_window, treatment_var~limit)
 write_csv(relevant_window_cast, "processed_data/relevant_window_cast.csv")

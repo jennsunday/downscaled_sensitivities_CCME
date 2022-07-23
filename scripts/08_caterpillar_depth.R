@@ -71,7 +71,9 @@ unique(study_response$English_Name)
 ###############
 #plot data
 ###############
-
+sensitivity_by_study %>%
+  filter(modelzone=="200m") %>%
+  filter(treatment_var=="oxygen")
 
 
 label_species<- study_response %>%

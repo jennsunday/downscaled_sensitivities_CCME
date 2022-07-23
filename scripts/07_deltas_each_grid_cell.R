@@ -149,7 +149,7 @@ df.depth_bot_2km<-melt(depth_bot_2km) %>%
 
 #oxygen conversion from mmol/m3 to ml/l
 conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
-df.oxy_200_2km$delta<-df.oxy_200_2km$delta*conv_oxy
+df.oxy_200_2km$delta<-df.oxy_200_2km$delta #don't convert this one because it was already in ml/l
 df.oxy_bot_2km$delta<-df.oxy_bot_2km$delta*conv_oxy
 df.oxy_surf_2km$delta<-df.oxy_surf_2km$delta*conv_oxy
 

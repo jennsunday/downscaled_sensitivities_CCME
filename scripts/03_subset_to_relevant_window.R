@@ -14,8 +14,7 @@ data <- data %>%
 data<-data %>%
   mutate(genus_species=paste(data$Genus, data$Species, sep="_")) %>%
   mutate(unique_study=as.numeric(as.factor(paste(Author, Pub_Year, English_Name, Life_stage, 
-                                                 Response_variable, response_type, treatment_var, rate_or_biomass, response_type_2))))
-
+                                                 Response_variable, response_type, treatment_var, rate_or_biomass, response_type_2, study_design))))
 
 
 #plot all the data - relative response
@@ -49,9 +48,13 @@ data_in_window<-data2 %>%
 #make a *new* column that flags each unique study
 data_in_window<-data_in_window %>%
   mutate(unique_study=as.numeric(as.factor(paste(Author, Pub_Year, English_Name, Life_stage, 
-                                                 Response_variable, response_type, treatment_var, rate_or_biomass, response_type_2))))
+                                                 Response_variable, response_type, treatment_var, rate_or_biomass, response_type_2, study_design))))
 
 write_csv(data_in_window, "processed_data/data_in_window.csv")
+
+View(data_in_window %>%
+       filter(English_Name=="Ochre star",
+              treatment_var=="temperature"))
 
 
 #quick plot all the data - relative responses

@@ -14,18 +14,16 @@ depth_12km<-read_csv("processed_data/depth_12km.csv")
 depth_range<-read_csv("raw_data/depth_distribution.csv")
 sensitivity_by_study<-read_csv("processed_data/sensitivity_by_study_zoned.csv")
 
-#set seagrass to lower_depth of 30m instead of 10m to see more coverage
+#correct an error
 depth_range<-depth_range %>%
-  mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth))
+  mutate(common_name=ifelse(common_name=="Canopy−forming Kelp", "Canopy-forming Kelp", common_name)) %>% #fix a very cryptic difference in dashes
+  rename(English_Name=common_name)
 
 #left join sensitivity data to depth based on species names
-sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="common_name")
+sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="English_Name")
 #left join depth data to delta data for subsetting
 all_deltas_12km<-left_join(all_deltas_12km, depth_12km, by=c("lat", "long", "latlong"))
 
-
-sensitivity_by_study$lower_depth
-unique(depth_range$common_name)
 #adjust the names of the zones to set up the left_join
 sensitivity_by_study<-sensitivity_by_study %>%
   mutate (modelzone = case_when(modelzone=="bottom" ~ "bot", 
@@ -40,7 +38,7 @@ all_cells_deltas_12km<-all_deltas_12km %>%
                                 treatment_var=="pH" ~ "pH",
                                 TRUE ~ "999"))
 
-
+names(pos_neg_grid_species)
 pos_neg_grid_species<-left_join(sensitivity_by_study, all_cells_deltas_12km, by=c("treatment_var", "modelzone")) %>%
   drop_na(latlong) %>%
   drop_na(delta) %>%
@@ -51,13 +49,13 @@ pos_neg_grid_species<-left_join(sensitivity_by_study, all_cells_deltas_12km, by=
   mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*delta*100) %>% #calculate high 95C
   mutate(percentchangeSE=abs(se_estimate)*delta*100) %>% 
   mutate(variance=((percentchange_hi_95-percentchange)/1.96)^2, weight=1/(variance+0.00000001)) %>%
-  group_by(common_name, response_type, lat, long) %>% #now, take a weighted mean per response type and species inside each grid cell
+  group_by(English_Name, response_type, lat, long) %>% #now, take a weighted mean per response type and species inside each grid cell
   dplyr::summarize(weighted_response=weighted.mean(percentchange, w=weight), 
                    n=n(), SE_wmean=sqrt(1/(sum(weight)))) %>%
   mutate(lo_95=weighted_response-1.96*SE_wmean, hi_95=weighted_response+1.96*SE_wmean) %>%
   ungroup() %>%
   mutate(pos_neg=ifelse(weighted_response>0, "pos", "neg")) %>%
-  group_by(pos_neg, lat, long, common_name) %>%
+  group_by(pos_neg, lat, long, English_Name) %>%
   summarize(mean_response=mean(weighted_response))
 
 
@@ -81,18 +79,18 @@ coastline_mask2<-read_csv("processed_data/coastline_mask_12km.csv")
 
 # New facet label names for dose variable
 species.labs <- pos_neg_grid_species %>%
-  group_by(common_name, lat, long) %>%
+  group_by(English_Name, lat, long) %>%
   summarize(mean_ws=(mean(mean_response))) %>%
   ungroup() %>%
-  group_by(common_name) %>%
+  group_by(English_Name) %>%
   summarize(order=(mean(mean_ws))) %>%
-  .$common_name
+  .$English_Name
 
 species_order<-pos_neg_grid_species %>%
-  group_by(common_name, lat, long) %>%
+  group_by(English_Name, lat, long) %>%
   summarize(mean_ws=(mean(mean_response))) %>%
   ungroup() %>%
-  group_by(common_name) %>%
+  group_by(English_Name) %>%
   summarize(order=(mean(mean_ws))) %>%
   .$order
 
@@ -101,15 +99,15 @@ names(species.labs) <- species_order
 
 #prep a dataframe to left_join for a new order
 species_order.df<-pos_neg_grid_species %>%
-  group_by(common_name, lat, long) %>%
+  group_by(English_Name, lat, long) %>%
   summarize(mean_ws=(mean(mean_response))) %>%
   ungroup() %>%
-  group_by(common_name) %>%
+  group_by(English_Name) %>%
   summarize(order=(mean(mean_ws)))
 write_csv(species_order.df, "processed_data/species_order_12.csv")
 
 #replace order according to above
-pos_neg_grid_species<-left_join(pos_neg_grid_species, species_order.df, by="common_name")
+pos_neg_grid_species<-left_join(pos_neg_grid_species, species_order.df, by="English_Name")
 
 pos_neg_grid_species %>% 
   #filter(common_name=="razor clam") %>%

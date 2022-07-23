@@ -21,7 +21,8 @@ depth_range<-read_csv("raw_data/depth_distribution.csv")
 #set seagrass to lower_depth of 30m instead of 10m to see more coverage
 depth_range<-depth_range %>%
   mutate(lower_depth=ifelse(common_name=="seagrass", 30, lower_depth)) %>%
-  rename(English_Name=common_name)
+  mutate(common_name=ifelse(common_name=="Canopy−forming Kelp", "Canopy-forming Kelp", common_name)) %>% #fix a very cryptic difference in dashes
+  rename(English_Name=common_name) 
 
 #left join sensitivity data to depth based on species names
 sensitivity_by_study<-left_join(sensitivity_by_study, depth_range, by="English_Name") 
@@ -98,7 +99,7 @@ meta_plot<-meta_responses %>%
   ggplot(aes(x=weighted_response, y=compound_order, shape=response_type,
              col=response_type, fill=response_type)) +
   geom_vline(xintercept = 0, col="grey") +
-  coord_cartesian(xlim=c(-45,45)) +
+  coord_cartesian(xlim=c(-45,95)) +
   theme_classic() +
   geom_path(aes(group=English_Name), col=grey(0.8), lwd=1) +
   scale_shape_manual(values=c(21, 22, 23, 24, 25))+
@@ -144,7 +145,7 @@ summary_type<-meta_responses %>%
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
         legend.position = "none") +
-  coord_cartesian(xlim=c(-45,45)) +
+  coord_cartesian(xlim=c(-45,95)) +
   labs(x="Percent change in biological rate", x="weighted response", 
        col = "response type", fill="response type", shape="response type")
 
@@ -163,7 +164,7 @@ bigcat<-meta_responses %>%
   ggplot(aes(x=weighted_response, y=new_order, 
              shape=response_type, col=response_type, fill=response_type)) +
   geom_vline(xintercept = 0, col="grey") +
-  coord_cartesian(xlim=c(-45,45)) +
+  coord_cartesian(xlim=c(-45,95)) +
   geom_point(aes(size=1/SE_wmean)) + theme_classic() +
   #geom_path(aes(group=1)) +
   scale_color_manual(values = pnw_palette("Bay",7)) +
@@ -188,3 +189,4 @@ ggdraw() +
   draw_label("b", 0.58, 0.97) +
   draw_label("c", 0.58, 0.27)
 ggsave("figures/full_response_meta_fig.png", height=6, width=9) #save
+ggsave("figures/full_response_meta_fig.pdf", height=6, width=9) #save

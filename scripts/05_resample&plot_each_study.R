@@ -26,32 +26,35 @@ anova_data_expanded<- anova_data[rep(seq.int(1,nrow(anova_data)), anova_data$sam
 
 
 #simulate regression-style data from anova data in 5000 iterations, fit lms through them
+
 lm_anova_resampled<-data.frame()
-for(i in 1:1000){ #change back to 5000 eventually
-  lme_rep<-anova_data_expanded %>%
+for(i in 1:5000){ #change back to 5000 eventually
+  lm_rep<-anova_data_expanded %>%
     mutate(simulated_response=rnorm(rel_response, 
                                    mean=rel_response, 
                                    sd=SE_response_for_resampling)) %>% #add a column with a simulated sample for each row
     group_by(Author, Pub_Year, English_Name, Life_stage, Life_stage_category,
-             Response_variable, response_type, unique_study, treatment_var, rate_or_biomass, response_type_2) %>% #group data to study level and keep info
-    do(tidy(lm(simulated_response~treat_value, data=.))) %>%
+             Response_variable, response_type, unique_study, treatment_var, rate_or_biomass, response_type_2) %>%#group data to study level and keep info
+    do(tidy(lm(simulated_response~treat_value, data=.))) %>% #run lm on each subsample get parameters
     mutate(replicate=i) %>%
     ungroup()
-    lm_anova_resampled<-bind_rows(lme_rep, lm_anova_resampled)} 
+    lm_anova_resampled<-bind_rows(lm_rep, lm_anova_resampled)
+   } 
 #now have slope and intercept of n models fit to anova-style data
 #bunch of warnings - lm fit to 2 data points - that's ok.
 
 
-#get a summary of simulated lm's from anova data
+#get a summary (mean and sd) of simulated lm's from anova data
 lm_by_group_summary<-lm_anova_resampled %>%
   group_by(Author, Pub_Year, English_Name, Life_stage, Life_stage_category,
            Response_variable, response_type, unique_study, treatment_var, rate_or_biomass, response_type_2, term) %>%
   mutate(mean_estimate= mean(estimate), se_estimate = sd(estimate)) %>% #take means across reps
-  filter(replicate=="1") #subset to the first rep
+  filter(replicate=="1") #subset to the first rep so there is only one mean and sd per treatment level
 
 # do regular lm's for regression-style data
 regresion_data<-data_in_window %>%
   filter(study_design %in% c("regression")) 
+
 
 lm_by_group_summary_regress<-regresion_data %>%
   group_by(Author, Pub_Year, English_Name, Life_stage, Life_stage_category, Response_variable, response_type, unique_study, 
@@ -94,23 +97,6 @@ write_csv(sensitivity_by_study_zoned, "processed_data/sensitivity_by_study_zoned
 #plot mean salinity responses before dropping
 ###################################
 
-#read in mean delta table, and set up for a left_join
-environmental_mean_deltas<-read_csv("processed_data/table_delta_masked.csv") %>%
-  mutate(modelzone=water_range) %>%
-  mutate(variable=ifelse(variable=="temp", "temperature", variable)) 
-
-
-#left_join so that each model and zone mean delta is joined by a sensitivity on the left
-by_zone_response_estimates<-left_join(sensitivity_by_study, environmental_mean_deltas, 
-                                         by = c("treatment_var" = "variable", "modelzone" = "modelzone")) %>%
-                              filter(model=="2km")
-
-sensitivity_by_study_zoned<-by_zone_response_estimates %>%
-  mutate(percentchange=mean_estimate*mean_delta*100) %>% #calculate meta-analyzed sensitivity
-  mutate(percentchange_lo_95=(mean_estimate-1.96*se_estimate)*mean_delta*100) %>% #calculate low 95CI
-  mutate(percentchange_hi_95=(mean_estimate+1.96*se_estimate)*mean_delta*100) %>% #calculate high 95CI
-  mutate(percentchangeSE=abs(se_estimate)*mean_delta*100)
-
 sensitivity_by_study %>%
   filter(treatment_var=="salinity") %>%
   group_by(English_Name) %>%
@@ -121,8 +107,8 @@ sensitivity_by_study %>%
   ungroup() %>%
   ggplot(aes(x=mean_estimate, y=compound_order, shape=response_type, col=English_Name)) + 
   geom_point() + 
-  geom_errorbarh(aes(xmin=mean_estimate - 1.96*se_estimate, 
-                                    xmax=mean_estimate + 1.96*se_estimate), height=0) +
+  geom_errorbarh(aes(xmin=mean_estimate-1.96*se_estimate, 
+                                    xmax=mean_estimate+1.96*se_estimate), height=0) +
   theme_classic() +
   geom_vline(xintercept = 0, col="grey") +
   theme(axis.title.y = element_blank(),
