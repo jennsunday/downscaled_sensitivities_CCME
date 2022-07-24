@@ -11,7 +11,7 @@ library(gridExtra)
 
 
 
-#read in Sam's delta values 2km
+#read in model-projected delta values from 1.5km model (labelled 2km)
 CO2_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_200m.csv", col_names=F)
 CO2_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_bot.csv", col_names=F)
 CO2_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_surf.csv", col_names=F)
@@ -154,10 +154,18 @@ df.oxy_bot_2km$delta<-df.oxy_bot_2km$delta*conv_oxy
 df.oxy_surf_2km$delta<-df.oxy_surf_2km$delta*conv_oxy
 
 all_deltas_2km<-rbind(
-     df.CO2_200_2km, df.CO2_bot_2km, df.CO2_surf_2km, 
-     df.temp_200_2km, df.temp_bot_2km, df.temp_surf_2km, 
-     df.oxy_200_2km, df.oxy_bot_2km, df.oxy_surf_2km, 
-     df.pH_200_2km, df.pH_bot_2km, df.pH_surf_2km)
+     df.CO2_200_2km, 
+     df.CO2_bot_2km, 
+     df.CO2_surf_2km, 
+     df.temp_200_2km, 
+     df.temp_bot_2km, 
+     df.temp_surf_2km, 
+     df.oxy_200_2km, 
+     df.oxy_bot_2km, 
+     df.oxy_surf_2km, 
+     df.pH_200_2km, 
+     df.pH_bot_2km, 
+     df.pH_surf_2km)
 
 #get lat longs of land
 coastline_mask_2km<-all_deltas_2km %>%
@@ -171,7 +179,7 @@ write_csv(coastline_mask_2km, "processed_data/coastline_mask_2km.csv")
 write_csv(df.depth_bot_2km, "processed_data/depth_2km.csv")
 #repeat for 12km
 
-#read in Sam's delta values 2km
+#read in model-projected delta values from 1.5km model
 CO2_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_200m.csv", col_names=F)
 CO2_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_bot.csv", col_names=F)
 CO2_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_surf.csv", col_names=F)

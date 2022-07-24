@@ -110,7 +110,6 @@ write_csv(species_order.df, "processed_data/species_order_12.csv")
 pos_neg_grid_species<-left_join(pos_neg_grid_species, species_order.df, by="English_Name")
 
 pos_neg_grid_species %>% 
-  #filter(common_name=="razor clam") %>%
   na.omit(pos_neg) %>%
   ggplot(aes(y = lat, x = long)) + geom_tile(aes(fill = abs(mean_response))) +
   geom_tile(data=coastline_mask2, fill=grey(0.4)) +

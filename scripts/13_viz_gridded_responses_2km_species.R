@@ -1,5 +1,5 @@
 #goal: visualize the postitive and negative cumulative effects 
-# separated by species, for the 2km model
+# separated by species, for the 1.5km model (labelled 2km)
 
 library(tidyverse)
 library(broom)

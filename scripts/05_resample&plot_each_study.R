@@ -25,10 +25,9 @@ names(data_in_window)
 anova_data_expanded<- anova_data[rep(seq.int(1,nrow(anova_data)), anova_data$sample_size),]
 
 
-#simulate regression-style data from anova data in 5000 iterations, fit lms through them
-
+#simulate regression-style data from anova data in 5000 iterations, fit lms through each, extract slope and intercept
 lm_anova_resampled<-data.frame()
-for(i in 1:5000){ #change back to 5000 eventually
+for(i in 1:5000){ #5000 iterations of simulation
   lm_rep<-anova_data_expanded %>%
     mutate(simulated_response=rnorm(rel_response, 
                                    mean=rel_response, 

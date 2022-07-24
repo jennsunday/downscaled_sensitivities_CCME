@@ -52,11 +52,6 @@ data_in_window<-data_in_window %>%
 
 write_csv(data_in_window, "processed_data/data_in_window.csv")
 
-View(data_in_window %>%
-       filter(English_Name=="Ochre star",
-              treatment_var=="temperature"))
-
-
 #quick plot all the data - relative responses
 data_in_window %>% 
   ggplot(aes(y=rel_response, x=treat_value, group=study, color=response_type)) + geom_point() +

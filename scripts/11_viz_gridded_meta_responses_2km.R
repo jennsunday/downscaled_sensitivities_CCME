@@ -133,12 +133,7 @@ pos_neg_spread_2 %>%
 ggsave("figures/density_pos_responses.pdf", height=6, width=4)
 
 
-#define thresholds for 3 classes, based roughly on interquartiles but fixed for pos and neg differences
-uppercut_neg<-6.8
-lowercut_neg<-4.2
-uppercut_pos<-7.8
-lowercut_pos<-4.2
-
+#define thresholds for 3 classes, based roughly on interquartiles but fixed for pos and neg difference
 uppercut_neg<-8
 lowercut_neg<-4
 highcut_pos<-12
@@ -161,21 +156,6 @@ data_2<- pos_neg_spread_2 %>%
  mutate(bi_class=paste(as.character(bi_class_x),as.character(bi_class_y), sep="-")) %>%
   mutate(bi_class_fac=as.factor(bi_class))
 #positive then negative
-
-
-#c(pnw_palette("Bay",12,type="continuous"))
-#str(custom_pal)
-#custom_pal_alt_2 <- bi_pal_manual(val_3_1 = "#64acbe",  val_3_2= "#627f8c", val_3_3= "#574249", 
- #                               val_2_1 = "#b0d5df", val_2_2 = "#ad9ea5", val_2_3 = "#985356",
-#                               val_1_1 = "#e8e8e8", val_1_2 = "#e4acac", val_1_3 = "#c85a5a")
-
-#custom_pal_alt <- bi_pal_manual(val_1_3 = "#64acbe",  val_2_3= "#627f8c", val_3_3= "#574249", val_1_4="white", 
-#                                val_1_2 = "#b0d5df", val_2_2 = "#ad9ea5", val_3_2 = "#985356", val_2_4="red",
-#                                val_1_1 = grey(0.85), val_2_1 = "#e4acac", val_3_1 = "#c85a5a", val_3_4="green")
-
-
-
-#cols <- c("1_1" = "#E8E8E8", "1-2" = "#E2B8C0", "2_1" = "#BBD1EB", "2_2" = "#B7A3B8", "2_3"= "#984962", "3_2"="#8D8CB0", "3_3"= "#80396B", "4_2"= "#624D8D", "4_3"="#630E74")
 
 
 
@@ -202,7 +182,7 @@ data_2 %>%
  #                   dim = 3,
   #                  ylab = "increasing responses",
    #                 xlab = "decreasing responses",
-                    size = 12)
+    #                size = 12)
 
 #ggdraw() +
  # draw_plot(map, 0.1, 0, 1, 1) +
@@ -218,20 +198,4 @@ ggsave("figures/pos_neg_biplot_2km.png", height=10, width=7)
 
 
 
-# create classes
-#after reading all of the 12km-model script, make this figure of density distributions from both model types
-rbind(mutate(pos_neg_spread_2, model="1.5"), mutate(pos_neg_spread_12, model="12")) %>%
-  ggplot(aes(x=neg, fill=model)) +
-  geom_density(alpha=0.5) +
-  geom_vline(xintercept=c(4, 7.7)) + 
-  theme_classic()
-ggsave("figures/density_neg_responses.pdf", height=4, width=6)
-
-#after reading all of the 12km-model script, make this figure of density distributions from both model types
-rbind(mutate(pos_neg_spread_2, model="1.5"), mutate(pos_neg_spread_12, model="12")) %>%
-  ggplot(aes(x=pos, fill=model)) +
-  geom_density(alpha=0.5)+
-  geom_vline(xintercept=c(3,7,12)) + 
-  theme_classic()
-ggsave("figures/density_pos_responses.pdf", height=6, width=4)
 

@@ -14,7 +14,7 @@ big_shelf_mask<-read_csv("raw_data/new_downscaled_climate_data/mask_500m_12km.cs
 
 #0 marks ocean points with depth > 500m, 1 marks ocean points with depth <= 500m
 
-#read in Sam's delta values 2km
+#read in model-projected delta values from 1.5km downscaled model (labelled 2km)
 CO2_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_200m.csv", col_names=F)
 CO2_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_bot.csv", col_names=F)
 CO2_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_surf.csv", col_names=F)
@@ -27,9 +27,8 @@ oxy_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_surf.
 pH_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_200m.csv", col_names=F)
 pH_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_bot.csv", col_names=F)
 pH_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_surf.csv", col_names=F)
-View(oxy_200_2km)
 
-#read in Sam's delta values 12km
+#read in model-projected delta values from 12km downscaled model 
 CO2_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_200m.csv", col_names=F)
 CO2_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_bot.csv", col_names=F)
 CO2_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_surf.csv", col_names=F)
@@ -158,19 +157,19 @@ table_results_12km<-rbind(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12)
 #combine into one table
 table_delta_masked<-rbind(table_results_2km, table_results_12km)
 
-#values are still in units of mmol/m^3.  To convert to ml/l, multiply by this:
+#oxygen values are still in units of mmol/m^3.  To convert to ml/l, multiply by this:
 conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
 
-View(table_delta_masked)
+#alter oxygen to ml/l units in all cases except for the 200m depth range, of model 1.5km model.. this model output came in units of ml/l
 table_delta_masked<-table_delta_masked %>%
  mutate(converted_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta),
         converted_sd=ifelse(variable=="oxygen", sd_delta*conv_oxy, sd_delta)) %>%
-  mutate(correct_delta=ifelse(water_range=="200m" & model=="2km" & variable=="oxygen", mean_delta, converted_delta),
-         correct_sd=ifelse(water_range=="200m" & model=="2km" & variable=="oxygen", sd_delta, converted_sd))
+ mutate(correct_delta=ifelse(water_range=="200m" & model=="2km" & variable=="oxygen", mean_delta, converted_delta), #use the original units for oxy_200_2km
+         correct_sd=ifelse(water_range=="200m" & model=="2km" & variable=="oxygen", sd_delta, converted_sd))#use the original units for oxy_200_2km
+ 
+write_csv(table_delta_masked, "processed_data/table_delta_masked.csv") #write this out
 
-write_csv(table_delta_masked, "processed_data/table_delta_masked.csv")
-
-table_delta_masked<-read_csv("processed_data/table_delta_masked.csv")
+table_delta_masked<-read_csv("processed_data/table_delta_masked.csv") #read this in
 
 table_delta_masked %>%
   mutate(model=ifelse(model=="2km", "1.5km", model)) %>%
@@ -181,25 +180,4 @@ table_delta_masked %>%
   labs(x="delta", y="habitat zone") + theme_classic()
 ggsave("figures/delta_plotted.png")
 
-#test if oxy 200 2km is already converted to ml/l
-OLD_oxy_200_2km<-read_csv("raw_data/OLD2km_delta_oxy_200m.csv", col_names=F)
-OLD_oxy_200_2km[!little_shelf_mask==1] <- NA
-oxy_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_200m.csv", col_names=F)
-oxy_200_2km[!little_shelf_mask==1] <- NA
-OLDr7<-data.frame(delta=melt(OLD_oxy_200_2km, var='x_value')$value, 
-               model="2km", water_range="200m", variable="oxygen") %>%
-  mutate(delta=delta*conv_oxy)
-r7<-data.frame(delta=melt(oxy_200_2km, var='x_value')$value, 
-                  model="2km", water_range="200m", variable="oxygen") 
-
-plot(r7$delta~OLDr7$delta)
-
-table_delta_masked %>%
-  mutate(model=ifelse(model=="2km", "1.5km", model)) %>%
-  ggplot(aes(x=mean_delta, y=water_range, col=model)) +
-  facet_wrap(~variable, scales="free_x") +
-  geom_point() +
-  geom_errorbarh(aes(xmax=mean_delta+sd_delta, xmin=mean_delta-sd_delta), height=0.4) +
-  labs(x="delta", y="habitat zone")
-ggsave("figures/delta_plotted.png")
 

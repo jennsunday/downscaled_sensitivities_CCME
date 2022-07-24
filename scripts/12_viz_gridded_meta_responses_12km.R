@@ -165,3 +165,20 @@ data_12 %>%
 ggsave("figures/pos_neg_biplot_12km.png", width=4.5, height=13)
 ggsave("figures/pos_neg_biplot_12km.pdf", width=4.5, height=13)
 
+
+#after reading script 11 and 12, make this figure of density distributions from both model types
+rbind(mutate(pos_neg_spread_2, model="1.5"), mutate(pos_neg_spread_12, model="12")) %>%
+  ggplot(aes(x=neg, fill=model)) +
+  geom_density(alpha=0.5) +
+  geom_vline(xintercept=c(4, 7.7)) + 
+  theme_classic()
+ggsave("figures/density_neg_responses.pdf", height=4, width=6)
+
+#after reading all of the 12km-model script, make this figure of density distributions from both model types
+rbind(mutate(pos_neg_spread_2, model="1.5"), mutate(pos_neg_spread_12, model="12")) %>%
+  ggplot(aes(x=pos, fill=model)) +
+  geom_density(alpha=0.5)+
+  geom_vline(xintercept=c(3,7,12)) + 
+  theme_classic()
+ggsave("figures/density_pos_responses.pdf", height=6, width=4)
+
