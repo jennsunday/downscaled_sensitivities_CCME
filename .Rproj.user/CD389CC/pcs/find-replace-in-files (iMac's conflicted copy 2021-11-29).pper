@@ -1,0 +1,13 @@
+{
+    "dialog-state": {
+        "query": "predict(",
+        "path": "~/Dropbox/UW_Schmidt/data_analysis/UW_downscaled_sensitivies",
+        "regex": false,
+        "caseSensitive": false,
+        "filePatterns": [],
+        "excludeFilePatterns": [],
+        "resultsCount": 0,
+        "errorCount": 0,
+        "replaceErrors": ""
+    }
+}

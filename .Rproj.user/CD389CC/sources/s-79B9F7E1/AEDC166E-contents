@@ -1,0 +1,183 @@
+# Goal: Calculate on-the-shelf mean deltas for each model (2km and 12km),
+# and each water range (bottom, 200, surface)
+# and each response variable
+# produce a table
+
+library(ggplot2)
+library(tidyverse)
+library(reshape2)
+library(gridExtra)
+
+#read in 500m mask
+little_shelf_mask<-read_csv("raw_data/new_downscaled_climate_data/mask_500m_2km.csv", col_names=F)
+big_shelf_mask<-read_csv("raw_data/new_downscaled_climate_data/mask_500m_12km.csv", col_names=F)
+
+#0 marks ocean points with depth > 500m, 1 marks ocean points with depth <= 500m
+
+#read in model-projected delta values from 1.5km downscaled model (labelled 2km)
+CO2_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_200m.csv", col_names=F)
+CO2_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_bot.csv", col_names=F)
+CO2_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pCO2_surf.csv", col_names=F)
+temp_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_200m.csv", col_names=F)
+temp_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_bot.csv", col_names=F)
+temp_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_temp_surf.csv", col_names=F)
+oxy_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_200m.csv", col_names=F)
+oxy_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_bot.csv", col_names=F)
+oxy_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_oxy_surf.csv", col_names=F)
+pH_200_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_200m.csv", col_names=F)
+pH_bot_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_bot.csv", col_names=F)
+pH_surf_2km<-read_csv("raw_data/new_downscaled_climate_data/2km_delta_pH_surf.csv", col_names=F)
+
+#read in model-projected delta values from 12km downscaled model 
+CO2_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_200m.csv", col_names=F)
+CO2_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_bot.csv", col_names=F)
+CO2_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pCO2_surf.csv", col_names=F)
+temp_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_temp_200m.csv", col_names=F)
+temp_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_temp_bot.csv", col_names=F)
+temp_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_temp_surf.csv", col_names=F)
+oxy_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_200m.csv", col_names=F)
+oxy_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_bot.csv", col_names=F)
+oxy_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_oxy_surf.csv", col_names=F)
+pH_200_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pH_200m.csv", col_names=F)
+pH_bot_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pH_bot.csv", col_names=F)
+pH_surf_12km<-read_csv("raw_data/new_downscaled_climate_data/12km_delta_pH_surf.csv", col_names=F)
+
+
+#apply the mask to each
+CO2_200_2km[!little_shelf_mask==1] <- NA
+CO2_bot_2km[!little_shelf_mask==1] <- NA
+CO2_surf_2km[!little_shelf_mask==1] <- NA
+temp_200_2km[!little_shelf_mask==1] <- NA
+temp_bot_2km[!little_shelf_mask==1] <- NA
+temp_surf_2km[!little_shelf_mask==1] <- NA
+oxy_200_2km[!little_shelf_mask==1] <- NA
+oxy_bot_2km[!little_shelf_mask==1] <- NA
+oxy_surf_2km[!little_shelf_mask==1] <- NA
+pH_200_2km[!little_shelf_mask==1] <- NA
+pH_bot_2km[!little_shelf_mask==1] <- NA
+pH_surf_2km[!little_shelf_mask==1] <- NA
+
+CO2_200_12km[!big_shelf_mask==1] <- NA
+CO2_bot_12km[!big_shelf_mask==1] <- NA
+CO2_surf_12km[!big_shelf_mask==1] <- NA
+temp_200_12km[!big_shelf_mask==1] <- NA
+temp_bot_12km[!big_shelf_mask==1] <- NA
+temp_surf_12km[!big_shelf_mask==1] <- NA
+oxy_200_12km[!big_shelf_mask==1] <- NA
+oxy_bot_12km[!big_shelf_mask==1] <- NA
+oxy_surf_12km[!big_shelf_mask==1] <- NA
+pH_200_12km[!big_shelf_mask==1] <- NA
+pH_bot_12km[!big_shelf_mask==1] <- NA
+pH_surf_12km[!big_shelf_mask==1] <- NA
+
+
+#melt into long data, and calculate mean delta and sd delta, prepare into dataframes
+r1<-data.frame(mean_delta=mean(melt(CO2_200_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(CO2_200_2km, var='x_value')$value, na.rm = TRUE),
+                        model="2km", water_range="200m", variable="CO2")
+r2<-data.frame(mean_delta=mean(melt(CO2_bot_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(CO2_bot_2km, var='x_value')$value, na.rm = TRUE),
+                        model="2km", water_range="bottom", variable="CO2")
+r3<-data.frame(mean_delta=mean(melt(CO2_surf_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(CO2_surf_2km, var='x_value')$value, na.rm = TRUE),
+                         model="2km", water_range="surface", variable="CO2")
+r4<-data.frame(mean_delta=mean(melt(temp_200_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(temp_200_2km, var='x_value')$value, na.rm = TRUE),
+                         model="2km", water_range="200m", variable="temp")
+r5<-data.frame(mean_delta=mean(melt(temp_bot_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(temp_bot_2km, var='x_value')$value, na.rm = TRUE),
+                         model="2km", water_range="bottom", variable="temp")
+r6<-data.frame(mean_delta=mean(melt(temp_surf_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(temp_surf_2km, var='x_value')$value, na.rm = TRUE),
+                          model="2km", water_range="surface", variable="temp")
+r7<-data.frame(mean_delta=mean(melt(oxy_200_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(oxy_200_2km, var='x_value')$value, na.rm = TRUE),
+                        model="2km", water_range="200m", variable="oxygen")
+r8<-data.frame(mean_delta=mean(melt(oxy_bot_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(oxy_bot_2km, var='x_value')$value, na.rm = TRUE),
+                        model="2km", water_range="bottom", variable="oxygen")
+r9<-data.frame(mean_delta=mean(melt(oxy_surf_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(oxy_surf_2km, var='x_value')$value, na.rm = TRUE),
+                         model="2km", water_range="surface", variable="oxygen")
+r10<-data.frame(mean_delta=mean(melt(pH_200_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(pH_200_2km, var='x_value')$value, na.rm = TRUE),
+               model="2km", water_range="200m", variable="pH")
+r11<-data.frame(mean_delta=mean(melt(pH_bot_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(pH_bot_2km, var='x_value')$value, na.rm = TRUE),
+               model="2km", water_range="bottom", variable="pH")
+r12<-data.frame(mean_delta=mean(melt(pH_surf_2km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(pH_surf_2km, var='x_value')$value, na.rm = TRUE),
+               model="2km", water_range="surface", variable="pH")
+
+#combine dataframes
+table_results_2km<-rbind(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12)
+
+
+#melt into long data, and calculate mean delta and sd delta, prepare into dataframes
+r1<-data.frame(mean_delta=mean(melt(CO2_200_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(CO2_200_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="200m", variable="CO2")
+r2<-data.frame(mean_delta=mean(melt(CO2_bot_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(CO2_bot_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="bottom", variable="CO2")
+r3<-data.frame(mean_delta=mean(melt(CO2_surf_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(CO2_surf_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="surface", variable="CO2")
+r4<-data.frame(mean_delta=mean(melt(temp_200_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(temp_200_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="200m", variable="temp")
+r5<-data.frame(mean_delta=mean(melt(temp_bot_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(temp_bot_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="bottom", variable="temp")
+r6<-data.frame(mean_delta=mean(melt(temp_surf_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(temp_surf_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="surface", variable="temp")
+r7<-data.frame(mean_delta=mean(melt(oxy_200_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(oxy_200_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="200m", variable="oxygen")
+r8<-data.frame(mean_delta=mean(melt(oxy_bot_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(oxy_bot_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="bottom", variable="oxygen")
+r9<-data.frame(mean_delta=mean(melt(oxy_surf_12km, var='x_value')$value, na.rm = TRUE), 
+               sd_delta=sd(melt(oxy_surf_12km, var='x_value')$value, na.rm = TRUE),
+               model="12km", water_range="surface", variable="oxygen")
+r10<-data.frame(mean_delta=mean(melt(pH_200_12km, var='x_value')$value, na.rm = TRUE), 
+                sd_delta=sd(melt(pH_200_12km, var='x_value')$value, na.rm = TRUE),
+                model="12km", water_range="200m", variable="pH")
+r11<-data.frame(mean_delta=mean(melt(pH_bot_12km, var='x_value')$value, na.rm = TRUE), 
+                sd_delta=sd(melt(pH_bot_12km, var='x_value')$value, na.rm = TRUE),
+                model="12km", water_range="bottom", variable="pH")
+r12<-data.frame(mean_delta=mean(melt(pH_surf_12km, var='x_value')$value, na.rm = TRUE), 
+                sd_delta=sd(melt(pH_surf_12km, var='x_value')$value, na.rm = TRUE),
+                model="12km", water_range="surface", variable="pH")
+          
+#combine dataframes
+table_results_12km<-rbind(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12)
+
+#combine into one table
+table_delta_masked<-rbind(table_results_2km, table_results_12km)
+
+#oxygen values are still in units of mmol/m^3.  To convert to ml/l, multiply by this:
+conv_oxy<-(1000/1026)*(1+26.8/1000)*22.414/1000
+
+#alter oxygen to ml/l units in all cases except for the 200m depth range, of model 1.5km model.. this model output came in units of ml/l
+table_delta_masked<-table_delta_masked %>%
+ mutate(converted_delta=ifelse(variable=="oxygen", mean_delta*conv_oxy, mean_delta),
+        converted_sd=ifelse(variable=="oxygen", sd_delta*conv_oxy, sd_delta)) %>%
+ mutate(correct_delta=ifelse(water_range=="200m" & model=="2km" & variable=="oxygen", mean_delta, converted_delta), #use the original units for oxy_200_2km
+         correct_sd=ifelse(water_range=="200m" & model=="2km" & variable=="oxygen", sd_delta, converted_sd))#use the original units for oxy_200_2km
+ 
+write_csv(table_delta_masked, "processed_data/table_delta_masked.csv") #write this out
+
+table_delta_masked<-read_csv("processed_data/table_delta_masked.csv") #read this in
+
+table_delta_masked %>%
+  mutate(model=ifelse(model=="2km", "1.5km", model)) %>%
+  ggplot(aes(x=correct_delta, y=water_range, col=model)) +
+  facet_wrap(~variable, scales="free_x") +
+  geom_point() +
+  geom_errorbarh(aes(xmax=correct_delta+correct_sd, xmin=correct_delta-correct_sd), height=0.4) +
+  labs(x="delta", y="habitat zone") + theme_classic()
+ggsave("figures/delta_plotted.png")
+
+
